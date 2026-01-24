@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Rhyl</title>
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js CDN -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Custom JS -->
+    <script src="js/main.js"></script>
+</head>
+
+<body class="bg-[#f8fafc] min-h-screen flex items-center justify-center p-4 relative overflow-x-hidden"
+    x-data="loginPage">
+    <!-- Background Decor -->
+    <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
+        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-500/5 rounded-full blur-[120px]">
+        </div>
+    </div>
+
+    <div class="w-full max-w-md relative fade-up">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/50 p-6 md:p-12 border border-slate-100">
+            <a href="index.html" class="flex justify-center mb-10 group">
+                <img src="images/rhyll-logo.png" alt="Rhyl"
+                    class="h-14 w-auto transition-transform group-hover:scale-105"
+                    style="filter: grayscale(100%) sepia(100%) hue-rotate(190deg) saturate(500%) contrast(120%);">
+            </a>
+
+            <div class="text-center mb-10 space-y-2">
+                <h1 class="text-3xl font-black text-slate-900 tracking-tight">Welcome Back</h1>
+                <p class="text-slate-500 font-medium">Please enter your details to sign in</p>
+            </div>
+
+            <div x-show="error" x-transition
+                class="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-2xl mb-8 text-sm font-bold flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                        clip-rule="evenodd" />
+                </svg>
+                <span x-text="error"></span>
+            </div>
+
+            <form @submit.prevent="handleSubmit()" class="space-y-6">
+                <div class="space-y-2">
+                    <label class="block text-sm font-black text-slate-900 uppercase tracking-widest ml-1">Email
+                        Address</label>
+                    <input type="email" x-model="email" placeholder="you@rhyl.com"
+                        class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 focus:bg-white transition-all outline-none font-medium"
+                        required>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center ml-1">
+                        <label
+                            class="block text-sm font-black text-slate-900 uppercase tracking-widest">Password</label>
+                        <a href="#"
+                            class="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">Forgot?</a>
+                    </div>
+                    <input type="password" x-model="password" placeholder="••••••••"
+                        class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 focus:bg-white transition-all outline-none font-medium"
+                        required>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" :disabled="loading"
+                        class="w-full bg-slate-900 text-white py-5 rounded-2xl hover:bg-blue-600 transition-all font-black text-lg shadow-xl shadow-slate-900/10 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3">
+                        <span x-show="!loading">Sign In</span>
+                        <span x-show="loading" class="flex items-center gap-2">
+                            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                            Verifying...
+                        </span>
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-12 text-center">
+                <p class="text-slate-500 font-medium">
+                    Don't have an account?
+                    <a href="signup.html"
+                        class="text-blue-600 hover:text-blue-700 font-black transition-colors underline decoration-blue-500/30">Join
+                        Rhyl</a>
+                </p>
+            </div>
+
+            <div class="mt-10 pt-8 border-t border-slate-50 text-center">
+                <span
+                    class="inline-block px-4 py-1.5 bg-slate-50 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    Demo: user@example.com / password123
+                </span>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

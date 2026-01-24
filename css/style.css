@@ -1,0 +1,430 @@
+/* Rhyl Premium Design System */
+html {
+    scroll-behavior: smooth;
+}
+
+:root {
+    --brand-primary: #2563eb;
+    --brand-secondary: #4f46e5;
+    --brand-accent: #f59e0b;
+    --bg-main: #f8fafc;
+    --card-bg: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --premium-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    --inner-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    color: var(--text-main);
+    background-color: var(--bg-main);
+    -webkit-font-smoothing: antialiased;
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+/* Custom Scrollbar for Smoothness */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Glassmorphism Effect */
+.glass {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Premium Card Hover */
+.product-card {
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    background: white;
+}
+
+.product-card:hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.15), 0 18px 36px -18px rgba(0, 0, 0, 0.1);
+}
+
+/* Animated Gradient Text */
+.gradient-text {
+    background: linear-gradient(to right, var(--brand-primary), var(--brand-secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Custom Navigation Underline */
+.nav-link {
+    position: relative;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background-color: var(--brand-primary);
+    transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+/* Section Transitions */
+.fade-up {
+    animation: fadeUp 0.8s ease-out forwards;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Product Image Container */
+.image-zoom-container {
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-zoom-container img {
+    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.08));
+    will-change: transform, filter;
+}
+
+.product-card:hover .image-zoom-container img {
+    transform: scale(1.1) translateY(-5px);
+    filter: drop-shadow(0 25px 30px rgba(0, 0, 0, 0.15));
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN - Mobile & iPad Styles
+   ========================================== */
+
+/* Mobile Devices (up to 640px) */
+@media screen and (max-width: 640px) {
+
+    /* Typography */
+    h1 {
+        font-size: 1.75rem !important;
+        line-height: 1.2 !important;
+    }
+
+    h2 {
+        font-size: 1.5rem !important;
+    }
+
+    h3 {
+        font-size: 1.125rem !important;
+    }
+
+    /* Hero Section */
+    .h-\[850px\] {
+        height: auto !important;
+        min-height: 500px !important;
+    }
+
+    /* Product Cards - Touch friendly */
+    .product-card {
+        border-radius: 1rem;
+    }
+
+    .product-card:hover {
+        transform: translateY(-4px) scale(1.01);
+    }
+
+    /* Touch Targets */
+    button,
+    a {
+        min-height: 44px;
+    }
+
+    /* Reduce large paddings */
+    .py-32 {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+    }
+
+    .py-24 {
+        padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+    }
+
+    .py-20 {
+        padding-top: 1.25rem !important;
+        padding-bottom: 1.25rem !important;
+    }
+
+    .py-16 {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+    }
+
+    .p-12 {
+        padding: 1.5rem !important;
+    }
+
+    .p-24 {
+        padding: 1.5rem !important;
+    }
+
+    /* Reduce border radius on mobile */
+    .rounded-\[3rem\] {
+        border-radius: 1.5rem !important;
+    }
+
+    .rounded-\[2\.5rem\] {
+        border-radius: 1rem !important;
+    }
+
+    .rounded-\[2rem\] {
+        border-radius: 0.75rem !important;
+    }
+
+    /* Banner heights */
+    .h-\[400px\] {
+        height: 300px !important;
+    }
+
+    .min-h-\[600px\] {
+        min-height: 400px !important;
+    }
+
+    .min-h-\[400px\] {
+        min-height: 280px !important;
+    }
+    
+    /* Ensure content doesn't overflow horizontally */
+    body {
+        overflow-x: hidden;
+    }
+    
+    .max-w-7xl {
+        width: 100% !important;
+        overflow-x: hidden;
+    }
+
+    /* Collage sizing */
+    .w-\[500px\] {
+        width: 280px !important;
+    }
+
+    .h-\[500px\] {
+        height: 280px !important;
+    }
+
+    /* Footer */
+    footer .grid {
+        grid-template-columns: 1fr !important;
+        gap: 2rem !important;
+    }
+
+    footer .lg\:col-span-4,
+    footer .lg\:col-span-2 {
+        grid-column: span 1 !important;
+    }
+
+    /* Text sizes */
+    .text-5xl {
+        font-size: 1.5rem !important;
+    }
+
+    .text-4xl {
+        font-size: 1.25rem !important;
+    }
+
+    .md\:text-7xl,
+    .md\:text-6xl,
+    .md\:text-5xl {
+        font-size: 1.75rem !important;
+    }
+
+    /* Product horizontal scroll */
+    .product-card {
+        min-width: 240px !important;
+    }
+}
+
+/* Tablets (641px - 1024px) */
+@media screen and (min-width: 641px) and (max-width: 1024px) {
+
+    /* Navigation */
+    nav .text-xs {
+        font-size: 0.65rem !important;
+    }
+
+    nav .px-1\.5 {
+        padding-left: 0.25rem !important;
+        padding-right: 0.25rem !important;
+    }
+
+    /* Product grid on tablets */
+    .lg\:grid-cols-4 {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+
+    .lg\:grid-cols-6 {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    }
+
+    /* Hero section */
+    .h-\[850px\] {
+        height: 600px !important;
+    }
+
+    /* Text sizing */
+    .md\:text-7xl {
+        font-size: 3rem !important;
+    }
+
+    .md\:text-6xl {
+        font-size: 2.5rem !important;
+    }
+
+    .md\:text-5xl {
+        font-size: 2rem !important;
+    }
+
+    /* Banner heights */
+    .h-\[400px\] {
+        height: 350px !important;
+    }
+
+    /* Padding adjustments */
+    .md\:p-24 {
+        padding: 2.5rem !important;
+    }
+
+    .md\:px-20 {
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }
+
+    /* Footer grid */
+    .lg\:grid-cols-12 {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .lg\:col-span-4 {
+        grid-column: span 1 !important;
+    }
+
+    .lg\:col-span-2 {
+        grid-column: span 1 !important;
+    }
+}
+
+/* iPad Pro (1025px - 1366px) */
+@media screen and (min-width: 1025px) and (max-width: 1366px) {
+    .max-w-7xl {
+        max-width: 1000px !important;
+    }
+
+    .lg\:grid-cols-4 {
+        gap: 1rem !important;
+    }
+
+    nav .text-xs {
+        font-size: 0.7rem !important;
+    }
+}
+
+/* Landscape Mode */
+@media screen and (orientation: landscape) and (max-height: 500px) {
+
+    .h-\[850px\],
+    .h-\[700px\],
+    .h-\[600px\] {
+        height: 350px !important;
+    }
+
+    .min-h-\[600px\] {
+        min-height: 300px !important;
+    }
+
+    .h-\[400px\] {
+        height: 250px !important;
+    }
+
+    .py-32,
+    .py-24 {
+        padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+    }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .product-card:hover {
+        transform: none;
+        box-shadow: var(--premium-shadow);
+    }
+
+    .product-card:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+
+    .product-card:hover .image-zoom-container img {
+        transform: none;
+        filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.08));
+    }
+
+    button,
+    [role="button"],
+    a {
+        touch-action: manipulation;
+    }
+}
+
+/* Mobile Menu Styles */
+.mobile-menu-open {
+    overflow: hidden;
+}
+
+/* Safe Area for Notched Devices */
+@supports (padding: max(0px)) {
+    .fixed.inset-0 {
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+        padding-bottom: max(0px, env(safe-area-inset-bottom));
+    }
+
+    footer {
+        padding-bottom: max(3rem, env(safe-area-inset-bottom));
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
