@@ -1,4 +1,4 @@
-const API_URL = 'https://rhyl-backend.vercel.app/api';
+const API_URL = 'https://rhyl-backend-1t8dk3gij-ansaralyhs-projects.vercel.app/api';
 
 document.addEventListener('alpine:init', () => {
     Alpine.data('indexPage', () => ({

@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = 'https://rhyl-backend.vercel.app/api';
+const API_BASE_URL = 'https://rhyl-backend-1t8dk3gij-ansaralyhs-projects.vercel.app/api';
 
 // Get auth token from localStorage
 const getToken = () => {
