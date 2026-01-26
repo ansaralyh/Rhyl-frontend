@@ -638,50 +638,21 @@
                 <div
                     :class="(section.id === 'pakistani-products' || section.id === 'african-products' || section.id === 'indian-products' || section.id === 'filipino-products') ? 'flex flex-wrap gap-6 justify-start pb-8' : 'flex gap-8 overflow-x-auto no-scrollbar snap-x pb-8 px-2 -mx-2'">
                     <template x-for="product in $data[section.data]" :key="product._id">
-                        <div
-                            :class="(section.id === 'pakistani-products' || section.id === 'african-products' || section.id === 'indian-products' || section.id === 'filipino-products') ? 'product-card w-[calc(25%-18px)] min-w-[220px] bg-white rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col cursor-pointer' : 'product-card min-w-[280px] sm:min-w-[300px] bg-white rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col snap-start cursor-pointer'">
-                            <a :href="'product-detail.html?id=' + product._id"
-                                class="image-zoom-container relative h-56 sm:h-64 bg-slate-50 flex items-center justify-center p-6 sm:p-8 block">
-                                <div class="absolute top-4 left-4 z-10">
-                                    <span
-                                        class="bg-white/80 glass px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-slate-900 border border-white"
-                                        x-text="'ID: #' + product._id.substring(product._id.length - 6)"></span>
-                                </div>
+                        <a :href="'product-detail.html?id=' + product._id"
+                            :class="(section.id === 'pakistani-products' || section.id === 'african-products' || section.id === 'indian-products' || section.id === 'filipino-products') ? 'product-card w-[calc(25%-18px)] min-w-[220px] bg-white rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-shadow block' : 'product-card min-w-[280px] sm:min-w-[300px] bg-white rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col snap-start cursor-pointer hover:shadow-lg transition-shadow block'">
+                            <div class="image-zoom-container relative h-56 sm:h-64 bg-slate-50 flex items-center justify-center p-6 sm:p-8">
                                 <img :src="product.image" :alt="product.name"
-                                    class="max-w-full max-h-full object-contain drop-shadow-xl ">
-                                <div class="absolute top-4 right-4 z-10 flex flex-col gap-2">
-                                    <button @click.stop="toggleWishlist(product)"
-                                        class="p-2 bg-white/80 glass rounded-full hover:text-red-500 transition-all ring-1 ring-slate-100"
-                                        :class="isInWishlist(product._id) ? 'text-red-500 fill-red-500' : 'text-slate-600'">
-                                        <i data-lucide="heart" class="w-4 h-4"></i>
-                                    </button>
-                                    <button @click.stop="openShareModal(product.name)"
-                                        class="p-2 bg-white/80 glass rounded-full text-slate-600 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-all ring-1 ring-slate-100">
-                                        <i data-lucide="share-2" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
+                                    class="max-w-full max-h-full object-contain drop-shadow-xl">
                             </div>
-                            <div class="p-6 sm:p-8 flex flex-col flex-1 space-y-4">
-                                <div class="flex justify-between items-start gap-4">
-                                    <a :href="'product-detail.html?id=' + product._id" class="font-bold text-slate-900 text-lg leading-snug line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors block"
-                                        x-text="product.name"></a>
-                                    <div class="flex items-center gap-1 shrink-0">
-                                        <i data-lucide="star" class="w-4 h-4 text-amber-400 fill-amber-400"></i>
-                                        <span class="text-sm font-bold text-slate-900" x-text="product.rating"></span>
-                                    </div>
-                                </div>
+                            <div class="p-6 sm:p-8 flex flex-col flex-1 space-y-3">
+                                <h3 class="font-bold text-slate-900 text-lg leading-snug line-clamp-2"
+                                    x-text="product.name"></h3>
                                 <div class="flex items-baseline gap-1">
                                     <span class="text-3xl font-black text-blue-600" x-text="'£' + product.price"></span>
                                     <span class="text-xs text-slate-400 font-medium">GBP</span>
                                 </div>
-                                <div class="pt-2">
-                                    <button @click="addToCart(product)"
-                                        class="w-full bg-slate-900 text-white py-4 rounded-2xl hover:bg-blue-600 transition-all font-bold shadow-lg shadow-slate-900/5 hover:shadow-blue-500/20 active:scale-95">
-                                        Add to Cart
-                                    </button>
-                                </div>
                             </div>
-                        </div>
+                        </a>
                     </template>
                 </div>
             </section>
