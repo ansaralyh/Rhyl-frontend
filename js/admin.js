@@ -1,5 +1,5 @@
 // --- DATA MANAGEMENT & API CALLS ---
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://rhyl-backend.vercel.app/api';
 
 function getAuthHeaders() {
     const token = localStorage.getItem('token');

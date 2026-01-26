@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://rhyl-backend.vercel.app/api';
 
 document.addEventListener('alpine:init', () => {
     Alpine.data('indexPage', () => ({
@@ -327,7 +327,7 @@ document.addEventListener('alpine:init', () => {
                 console.error('Login error:', err);
                 // Check for network/CORS errors
                 if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
-                    this.error = 'Cannot connect to server. Please check if the backend is running on http://localhost:5000';
+                    this.error = 'Cannot connect to server. Please check your internet connection.';
                 } else {
                     this.error = 'Login failed. Please try again.';
                 }
