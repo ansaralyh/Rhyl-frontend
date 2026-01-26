@@ -1,5 +1,5 @@
 // --- DATA MANAGEMENT & API CALLS ---
-const API_URL = 'https://rhyl-backend.vercel.app/api';
+const API_URL = 'http://localhost:5000/api';
 
 function getAuthHeaders() {
     const token = localStorage.getItem('token');
@@ -568,7 +568,7 @@ if (productForm) {
             image: imageUrls[0], // First image is main image
             images: imageUrls, // All images array
             stock: parseInt(document.getElementById('p-stock').value),
-            description: 'Product description'
+            description: document.getElementById('p-description').value || ''
         };
 
         try {
@@ -636,6 +636,7 @@ window.editProduct = async function (id) {
             document.getElementById('p-name').value = p.name;
             document.getElementById('p-price').value = p.price;
             document.getElementById('p-stock').value = p.stock || 0;
+            document.getElementById('p-description').value = p.description || '';
             document.getElementById('p-image-url').value = '';
             
             // Load multiple images if available
