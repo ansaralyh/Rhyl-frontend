@@ -639,9 +639,9 @@
                     :class="(section.id === 'pakistani-products' || section.id === 'african-products' || section.id === 'indian-products' || section.id === 'filipino-products') ? 'flex flex-wrap gap-6 justify-start pb-8' : 'flex gap-8 overflow-x-auto no-scrollbar snap-x pb-8 px-2 -mx-2'">
                     <template x-for="product in $data[section.data]" :key="product._id">
                         <div
-                            :class="(section.id === 'pakistani-products' || section.id === 'african-products' || section.id === 'indian-products' || section.id === 'filipino-products') ? 'product-card w-[calc(25%-18px)] min-w-[220px] bg-white rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col' : 'product-card min-w-[280px] sm:min-w-[300px] bg-white rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col snap-start'">
-                            <div
-                                class="image-zoom-container relative h-56 sm:h-64 bg-slate-50 flex items-center justify-center p-6 sm:p-8">
+                            :class="(section.id === 'pakistani-products' || section.id === 'african-products' || section.id === 'indian-products' || section.id === 'filipino-products') ? 'product-card w-[calc(25%-18px)] min-w-[220px] bg-white rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col cursor-pointer' : 'product-card min-w-[280px] sm:min-w-[300px] bg-white rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col snap-start cursor-pointer'">
+                            <a :href="'product-detail.html?id=' + product._id"
+                                class="image-zoom-container relative h-56 sm:h-64 bg-slate-50 flex items-center justify-center p-6 sm:p-8 block">
                                 <div class="absolute top-4 left-4 z-10">
                                     <span
                                         class="bg-white/80 glass px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-slate-900 border border-white"
@@ -663,8 +663,8 @@
                             </div>
                             <div class="p-6 sm:p-8 flex flex-col flex-1 space-y-4">
                                 <div class="flex justify-between items-start gap-4">
-                                    <h3 class="font-bold text-slate-900 text-lg leading-snug line-clamp-2"
-                                        x-text="product.name"></h3>
+                                    <a :href="'product-detail.html?id=' + product._id" class="font-bold text-slate-900 text-lg leading-snug line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors block"
+                                        x-text="product.name"></a>
                                     <div class="flex items-center gap-1 shrink-0">
                                         <i data-lucide="star" class="w-4 h-4 text-amber-400 fill-amber-400"></i>
                                         <span class="text-sm font-bold text-slate-900" x-text="product.rating"></span>
@@ -972,8 +972,8 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <template x-for="(product, index) in topProducts" :key="product._id">
                 <div
-                    class="product-card group bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm flex flex-col items-center text-center">
-                    <div class="relative w-full aspect-square bg-slate-50 rounded-2xl p-6 mb-6 overflow-hidden">
+                    class="product-card group bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm flex flex-col items-center text-center cursor-pointer">
+                    <a :href="'product-detail.html?id=' + product._id" class="relative w-full aspect-square bg-slate-50 rounded-2xl p-6 mb-6 overflow-hidden block">
                         <div class="absolute top-0 right-0 w-12 h-12 bg-blue-600 text-white font-black flex items-center justify-center rounded-bl-2xl rounded-tr-xl z-10"
                             x-text="'#' + (index + 1)"></div>
                         <img :src="product.image" :alt="product.name"
@@ -985,7 +985,7 @@
                             <i data-lucide="heart" class="w-4 h-4"></i>
                         </button>
                     </div>
-                    <h3 class="font-bold text-slate-900 text-lg mb-2 line-clamp-1" x-text="product.name"></h3>
+                    <a :href="'product-detail.html?id=' + product._id" class="font-bold text-slate-900 text-lg mb-2 line-clamp-1 cursor-pointer hover:text-blue-600 transition-colors block" x-text="product.name"></a>
                     <div class="flex items-center gap-1 justify-center mb-6">
                         <i data-lucide="star" class="w-4 h-4 text-amber-400 fill-amber-400"></i>
                         <span class="text-sm font-bold text-slate-900" x-text="product.rating"></span>
@@ -1054,6 +1054,7 @@
             </div>
         </div>
     </div>
+
 
     <!-- CTA Section -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">

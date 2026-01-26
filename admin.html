@@ -61,44 +61,43 @@
         .sidebar-header {
             padding: 30px 24px;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
         }
 
         .sidebar-logo {
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: center;
             text-decoration: none;
             color: white;
         }
 
         .sidebar-logo .logo-img {
-            height: 32px;
+            height: 50px;
+            width: auto;
+            background: transparent !important;
+            border: none;
+            padding: 0;
+            box-shadow: none;
+        }
+        
+        .sidebar-logo {
+            background: transparent !important;
+            padding: 0;
+            border: none;
+        }
+        
+        .sidebar-header {
+            background: transparent !important;
         }
 
         .sidebar-logo span {
-            font-weight: 800;
-            font-size: 1.25rem;
-            letter-spacing: -0.5px;
+            display: none;
         }
 
         .theme-toggle {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: white;
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.3s;
-        }
-
-        .theme-toggle:hover {
-            background: rgba(255, 255, 255, 0.2);
+            display: none;
         }
 
         .sidebar-nav {
@@ -515,6 +514,31 @@
             object-fit: contain;
         }
 
+        /* Image Preview Container Styling */
+        #images-preview-container {
+            scrollbar-width: thin;
+            scrollbar-color: var(--admin-border) var(--admin-bg);
+        }
+
+        #images-preview-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        #images-preview-container::-webkit-scrollbar-track {
+            background: var(--admin-bg);
+            border-radius: 4px;
+        }
+
+        #images-preview-container::-webkit-scrollbar-thumb {
+            background: var(--admin-border);
+            border-radius: 4px;
+        }
+
+        #images-preview-container::-webkit-scrollbar-thumb:hover {
+            background: var(--admin-text-light);
+        }
+
 
         .modal-header {
             padding: 24px 30px;
@@ -548,8 +572,8 @@
 
         .form-row {
             display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
+            gap: 24px;
+            margin-bottom: 28px;
         }
 
         .flex-1 {
@@ -557,14 +581,14 @@
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .form-group label {
             display: block;
             font-size: 0.85rem;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             color: var(--admin-text-main);
         }
 
@@ -824,15 +848,11 @@
         </header>
 
         <aside class="sidebar" id="admin-sidebar">
-            <div class="sidebar-header">
-                <a href="index.html" class="sidebar-logo">
+            <div class="sidebar-header" style="justify-content: center;">
+                <a href="index.html" class="sidebar-logo" style="justify-content: center; text-decoration: none; background: transparent;">
                     <img src="images/rhyll-logo.png" alt="Super Store" class="logo-img"
-                        style="filter: grayscale(100%) sepia(100%) hue-rotate(190deg) saturate(500%) contrast(120%);">
-                    <span>Admin Suite</span>
+                        style="height: 50px; width: auto; background: transparent;">
                 </a>
-                <button class="theme-toggle" onclick="toggleDarkMode()">
-                    <i class="fas fa-moon"></i>
-                </button>
             </div>
 
             <nav class="sidebar-nav">
@@ -1238,30 +1258,29 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Product Image</label>
-                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <label>Product Images (Multiple)</label>
+                            <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center;">
                                 <button type="button" class="btn btn-outline"
-                                    onclick="document.getElementById('p-image-file').click()" style="flex: 1;">
-                                    <i class="fas fa-upload"></i> Upload Image
+                                    onclick="document.getElementById('p-image-file').click()" style="flex: 1; min-width: 150px;">
+                                    <i class="fas fa-upload"></i> Upload Images
                                 </button>
-                                <span style="align-self: center; color: var(--admin-text-light);">OR</span>
+                                <span style="color: var(--admin-text-light); font-size: 0.9rem;">OR</span>
                                 <input type="text" class="form-control" id="p-image-url" placeholder="Enter image URL"
-                                    style="flex: 2;">
-                            </div>
-                            <input type="file" id="p-image-file" accept="image/*" style="display: none;">
-                            <div id="image-preview" style="margin-top: 10px; display: none;">
-                                <img id="preview-img" src="" alt="Preview"
-                                    style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 1px solid var(--admin-border);">
-                                <button type="button" class="btn btn-outline btn-sm" onclick="clearImagePreview()"
-                                    style="display: block; margin-top: 5px;">
-                                    <i class="fas fa-times"></i> Remove
+                                    style="flex: 2; min-width: 200px;" onkeypress="if(event.key === 'Enter') { event.preventDefault(); addImageFromUrl(); }">
+                                <button type="button" class="btn btn-outline" onclick="addImageFromUrl()" style="min-width: 100px;">
+                                    <i class="fas fa-plus"></i> Add URL
                                 </button>
                             </div>
-                            <small class="text-light">Upload a file or enter an image URL (e.g.,
-                                images/product.jpg)</small>
+                            <input type="file" id="p-image-file" accept="image/*" multiple style="display: none;">
+                            <div id="images-preview-container" style="margin-top: 15px; display: none; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; max-height: 400px; overflow-y: auto; padding: 10px; background: var(--admin-bg); border-radius: 12px; border: 1px dashed var(--admin-border);">
+                                <!-- Multiple image previews will be added here -->
+                            </div>
+                            <small class="text-light" style="display: block; margin-top: 10px; font-size: 0.85rem; line-height: 1.5;">
+                                <i class="fas fa-info-circle"></i> Upload multiple files or add image URLs one at a time. The first image will be used as the main product image.
+                            </small>
                         </div>
 
-                        <div class="form-row checkbox-row">
+                        <div class="form-row checkbox-row" style="margin-top: 8px;">
                             <label class="checkbox-container">
                                 <input type="checkbox" id="p-featured">
                                 <span class="checkmark"></span>
@@ -1338,4 +1357,5 @@
     <script src="js/admin.js"></script>
 </body>
 
+</html>
 </html>

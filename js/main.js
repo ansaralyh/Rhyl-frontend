@@ -252,6 +252,10 @@ document.addEventListener('alpine:init', () => {
                 navigator.clipboard.writeText(url);
             }
         },
+        openProductDetail(product) {
+            // Navigate to product detail page
+            window.location.href = `product-detail.html?id=${product._id}`;
+        },
         logout() {
             this.isLoggedIn = false;
             this.isAdminLoggedIn = false;
@@ -285,6 +289,23 @@ document.addEventListener('alpine:init', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: this.email, password: this.password })
                 });
+
+                // Check if response is ok before parsing
+                if (!response.ok) {
+                    // Try to parse error message
+                    let errorMessage = 'Login failed. Please try again.';
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.message || errorData.error || errorMessage;
+                    } catch (e) {
+                        // If response is not JSON, use status text
+                        errorMessage = response.statusText || errorMessage;
+                    }
+                    this.error = errorMessage;
+                    this.loading = false;
+                    return;
+                }
+
                 const data = await response.json();
 
                 if (data.success) {
@@ -303,8 +324,13 @@ document.addEventListener('alpine:init', () => {
                     this.error = data.message || 'Invalid credentials';
                 }
             } catch (err) {
-                console.error(err);
-                this.error = 'Login failed. Please try again.';
+                console.error('Login error:', err);
+                // Check for network/CORS errors
+                if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+                    this.error = 'Cannot connect to server. Please check your internet connection.';
+                } else {
+                    this.error = 'Login failed. Please try again.';
+                }
             } finally {
                 this.loading = false;
             }

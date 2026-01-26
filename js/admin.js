@@ -351,6 +351,13 @@ window.openAddProductModal = async function () {
     form.dataset.id = '';
     document.getElementById('live-preview-container').innerHTML = '<div class="preview-placeholder">Enter product details to see preview</div>';
 
+    // Clear all images
+    productImages = [];
+    productFiles.clear();
+    const container = document.getElementById('images-preview-container');
+    container.innerHTML = '';
+    container.style.display = 'none';
+
     // Populate Categories
     const categories = await fetchCategories();
     const catSelect = document.getElementById('p-category');
@@ -364,23 +371,143 @@ window.openAddProductModal = async function () {
 
 window.closeModal = function (id) {
     document.getElementById(id).style.display = 'none';
+    // Clear images when closing product modal
+    if (id === 'product-modal') {
+        productImages = [];
+        productFiles.clear();
+        const container = document.getElementById('images-preview-container');
+        if (container) {
+            container.innerHTML = '';
+            container.style.display = 'none';
+        }
+    }
 };
+
+// Store product images array
+let productImages = [];
+let productFiles = new Map(); // Store File objects for upload
 
 const productForm = document.getElementById('product-form');
 if (productForm) {
-    // Handle file input change for preview
+    // Handle multiple file input change for preview
     const fileInput = document.getElementById('p-image-file');
     if (fileInput) {
         fileInput.addEventListener('change', function (e) {
-            const file = e.target.files && e.target.files[0];
-            if (file) {
+            const files = Array.from(e.target.files || []);
+            files.forEach(file => {
                 const reader = new FileReader();
                 reader.onload = function (e) {
-                    document.getElementById('preview-img').src = e.target.result;
-                    document.getElementById('image-preview').style.display = 'block';
-                    document.getElementById('p-image-url').value = ''; // Clear URL input
+                    const imageId = addImagePreview(e.target.result, file.name, 'file');
+                    productFiles.set(imageId, file); // Store the File object
                 };
                 reader.readAsDataURL(file);
+            });
+            // Clear the input so same files can be selected again
+            e.target.value = '';
+        });
+    }
+
+    // Function to add image preview
+    window.addImagePreview = function(src, name, type) {
+        const imageId = 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        const imageData = { id: imageId, src: src, name: name, type: type };
+        productImages.push(imageData);
+
+        const container = document.getElementById('images-preview-container');
+        const previewDiv = document.createElement('div');
+        previewDiv.id = imageId;
+        previewDiv.style.cssText = 'position: relative; border: 2px solid var(--admin-border); border-radius: 12px; overflow: hidden; aspect-ratio: 1; background: var(--admin-bg); box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s ease; cursor: pointer;';
+        previewDiv.onmouseenter = function() { this.style.transform = 'scale(1.05)'; this.style.borderColor = 'var(--admin-primary)'; };
+        previewDiv.onmouseleave = function() { this.style.transform = 'scale(1)'; this.style.borderColor = 'var(--admin-border)'; };
+        
+        const img = document.createElement('img');
+        img.src = src;
+        img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; display: block;';
+        img.alt = name;
+        img.onerror = function() {
+            this.src = 'https://via.placeholder.com/200?text=Image+Error';
+        };
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.style.cssText = 'position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; background: rgba(239, 68, 68, 0.9); color: white; border: none; border-radius: 50%; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2);';
+        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+        removeBtn.onmouseenter = function() { this.style.background = 'rgba(239, 68, 68, 1)'; this.style.transform = 'scale(1.1)'; };
+        removeBtn.onmouseleave = function() { this.style.background = 'rgba(239, 68, 68, 0.9)'; this.style.transform = 'scale(1)'; };
+        removeBtn.onclick = (e) => { e.stopPropagation(); removeImage(imageId); };
+
+        const label = document.createElement('div');
+        label.style.cssText = 'position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); color: white; padding: 8px 6px 6px; font-size: 10px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-weight: 500;';
+        label.textContent = type === 'file' ? (name.length > 15 ? name.substring(0, 15) + '...' : name) : 'URL Image';
+        
+        // Add MAIN label for first image
+        if (productImages.length === 1) {
+            const mainLabel = document.createElement('div');
+            mainLabel.style.cssText = 'position: absolute; top: 8px; left: 8px; background: var(--admin-primary); color: white; padding: 4px 8px; border-radius: 6px; font-size: 9px; font-weight: bold; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.2); text-transform: uppercase; letter-spacing: 0.5px;';
+            mainLabel.textContent = 'MAIN';
+            previewDiv.appendChild(mainLabel);
+        }
+
+        previewDiv.appendChild(img);
+        previewDiv.appendChild(removeBtn);
+        previewDiv.appendChild(label);
+        container.appendChild(previewDiv);
+        container.style.display = 'grid';
+        
+        return imageId;
+    };
+
+    // Function to add image from URL
+    window.addImageFromUrl = function() {
+        const urlInput = document.getElementById('p-image-url');
+        const url = urlInput.value.trim();
+        if (url) {
+            addImagePreview(url, 'URL Image', 'url');
+            urlInput.value = '';
+        } else {
+            alert('Please enter an image URL');
+        }
+    };
+
+    // Function to remove image
+    window.removeImage = function(imageId) {
+        productImages = productImages.filter(img => img.id !== imageId);
+        productFiles.delete(imageId); // Remove file from map
+        const previewDiv = document.getElementById(imageId);
+        if (previewDiv) {
+            previewDiv.remove();
+        }
+        // Hide container if no images left
+        const container = document.getElementById('images-preview-container');
+        if (productImages.length === 0) {
+            container.style.display = 'none';
+        } else {
+            // Update main label if needed
+            updateMainImageLabel();
+        }
+    };
+
+    // Function to update main image label
+    function updateMainImageLabel() {
+        const container = document.getElementById('images-preview-container');
+        const previews = Array.from(container.querySelectorAll('[id^="img_"]'));
+        previews.forEach((preview, index) => {
+            // Find existing MAIN label by text content
+            const existingLabels = preview.querySelectorAll('div');
+            let mainLabel = null;
+            existingLabels.forEach(label => {
+                if (label.textContent === 'MAIN') {
+                    mainLabel = label;
+                }
+            });
+            
+            if (index === 0 && !mainLabel) {
+                mainLabel = document.createElement('div');
+                mainLabel.style.cssText = 'position: absolute; top: 8px; left: 8px; background: var(--admin-primary); color: white; padding: 4px 8px; border-radius: 6px; font-size: 9px; font-weight: bold; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.2); text-transform: uppercase; letter-spacing: 0.5px;';
+                mainLabel.textContent = 'MAIN';
+                preview.appendChild(mainLabel);
+            } else if (index !== 0 && mainLabel) {
+                mainLabel.remove();
             }
         });
     }
@@ -390,42 +517,56 @@ if (productForm) {
         const mode = productForm.dataset.mode;
         const id = productForm.dataset.id;
 
-        let imageUrl = document.getElementById('p-image-url').value.trim();
+        // Upload all file images first
+        const fileImages = productImages.filter(img => img.type === 'file');
+        const uploadedImageUrls = [];
 
-        // If file is selected, upload it first
-        const fileInput = document.getElementById('p-image-file');
-        if (fileInput && fileInput.files && fileInput.files[0]) {
-            try {
-                const formData = new FormData();
-                formData.append('image', fileInput.files[0]);
+        // Upload file images
+        for (const imgData of fileImages) {
+            const file = productFiles.get(imgData.id);
+            if (file) {
+                try {
+                    const formData = new FormData();
+                    formData.append('image', file);
 
-                const uploadResponse = await fetch(`${API_URL}/upload/product`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: formData
-                });
+                    const uploadResponse = await fetch(`${API_URL}/upload/product`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: formData
+                    });
 
-                const uploadResult = await uploadResponse.json();
-                if (uploadResult.success) {
-                    imageUrl = uploadResult.data.path;
-                } else {
-                    alert('Image upload failed: ' + uploadResult.message);
+                    const uploadResult = await uploadResponse.json();
+                    if (uploadResult.success) {
+                        uploadedImageUrls.push(uploadResult.data.path);
+                    } else {
+                        alert('Image upload failed: ' + uploadResult.message);
+                        return;
+                    }
+                } catch (err) {
+                    console.error('Upload error:', err);
+                    alert('Failed to upload image: ' + imgData.name);
                     return;
                 }
-            } catch (err) {
-                console.error('Upload error:', err);
-                alert('Failed to upload image');
-                return;
             }
+        }
+
+        // Collect all image URLs (uploaded files + URL images)
+        const urlImages = productImages.filter(img => img.type === 'url').map(img => img.src);
+        const imageUrls = [...uploadedImageUrls, ...urlImages];
+
+        // If no images, use placeholder
+        if (imageUrls.length === 0) {
+            imageUrls.push('https://via.placeholder.com/300x310');
         }
 
         const productData = {
             name: document.getElementById('p-name').value,
             price: parseFloat(document.getElementById('p-price').value),
             category: document.getElementById('p-category').value,
-            image: imageUrl || 'https://via.placeholder.com/300x310',
+            image: imageUrls[0], // First image is main image
+            images: imageUrls, // All images array
             stock: parseInt(document.getElementById('p-stock').value),
             description: 'Product description'
         };
@@ -495,7 +636,24 @@ window.editProduct = async function (id) {
             document.getElementById('p-name').value = p.name;
             document.getElementById('p-price').value = p.price;
             document.getElementById('p-stock').value = p.stock || 0;
-            document.getElementById('p-image-url').value = p.image || '';
+            document.getElementById('p-image-url').value = '';
+            
+            // Load multiple images if available
+            productImages = [];
+            productFiles.clear();
+            const container = document.getElementById('images-preview-container');
+            container.innerHTML = '';
+            
+            // If product has images array, load all of them
+            if (p.images && Array.isArray(p.images) && p.images.length > 0) {
+                p.images.forEach((imgUrl, index) => {
+                    addImagePreview(imgUrl, `Image ${index + 1}`, 'url');
+                });
+            } else if (p.image) {
+                // Fallback to single image
+                addImagePreview(p.image, 'Product Image', 'url');
+            }
+            
             // Set Category
             if (p.category) {
                 const catId = typeof p.category === 'object' ? p.category._id : p.category;
