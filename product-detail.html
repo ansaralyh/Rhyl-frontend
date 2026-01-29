@@ -278,7 +278,20 @@
                 async fetchProduct(id) {
                     try {
                         const response = await fetch(`${API_URL}/products/${id}`);
-                        const data = await response.json();
+                        const contentType = response.headers.get('content-type') || '';
+                        if (!contentType.includes('application/json')) {
+                            this.error = 'Product unavailable. Please try again later.';
+                            this.loading = false;
+                            return;
+                        }
+                        let data;
+                        try {
+                            data = await response.json();
+                        } catch (parseErr) {
+                            this.error = 'Failed to load product. Please try again.';
+                            this.loading = false;
+                            return;
+                        }
 
                         if (data.success) {
                             this.product = data.data;

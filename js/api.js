@@ -59,7 +59,18 @@ const request = async (endpoint, options = {}) => {
 
     try {
         const response = await fetch(url, config);
-        const data = await response.json();
+        const contentType = response.headers.get('content-type') || '';
+        let data;
+        if (contentType.includes('application/json')) {
+            try {
+                data = await response.json();
+            } catch (parseErr) {
+                throw new Error('Server returned invalid JSON');
+            }
+        } else {
+            const text = await response.text();
+            throw new Error(response.ok ? 'Invalid response format' : (response.statusText || text.slice(0, 80)));
+        }
 
         if (!response.ok) {
             throw new Error(data.message || 'Something went wrong');

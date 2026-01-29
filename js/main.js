@@ -135,7 +135,18 @@ document.addEventListener('alpine:init', () => {
         async fetchProducts() {
             try {
                 const response = await fetch(`${API_URL}/products?limit=200`);
-                const result = await response.json();
+                const contentType = response.headers.get('content-type') || '';
+                if (!response.ok || !contentType.includes('application/json')) {
+                    console.warn('Products API returned non-JSON or error:', response.status, response.statusText);
+                    return;
+                }
+                let result;
+                try {
+                    result = await response.json();
+                } catch (parseErr) {
+                    console.warn('Products API response was not valid JSON:', parseErr.message);
+                    return;
+                }
 
                 if (result.success) {
                     const allProducts = result.data;
@@ -304,23 +315,27 @@ document.addEventListener('alpine:init', () => {
                     body: JSON.stringify({ email: this.email, password: this.password })
                 });
 
-                // Check if response is ok before parsing
-                if (!response.ok) {
-                    // Try to parse error message
-                    let errorMessage = 'Login failed. Please try again.';
-                    try {
-                        const errorData = await response.json();
-                        errorMessage = errorData.message || errorData.error || errorMessage;
-                    } catch (e) {
-                        // If response is not JSON, use status text
-                        errorMessage = response.statusText || errorMessage;
-                    }
-                    this.error = errorMessage;
+                const contentType = response.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
+                    this.error = response.ok ? 'Invalid response from server.' : (response.statusText || 'Login failed. Please try again.');
                     this.loading = false;
                     return;
                 }
 
-                const data = await response.json();
+                let data;
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    this.error = 'Login failed. Please try again.';
+                    this.loading = false;
+                    return;
+                }
+
+                if (!response.ok) {
+                    this.error = data.message || data.error || response.statusText || 'Login failed. Please try again.';
+                    this.loading = false;
+                    return;
+                }
 
                 if (data.success) {
                     const userData = data.data;
@@ -364,7 +379,20 @@ document.addEventListener('alpine:init', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name: this.name, email: this.email, password: this.password })
                 });
-                const data = await response.json();
+                const contentType = response.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
+                    alert('Server returned an unexpected response. Please try again.');
+                    this.loading = false;
+                    return;
+                }
+                let data;
+                try {
+                    data = await response.json();
+                } catch (parseErr) {
+                    alert('Server error. Please try again.');
+                    this.loading = false;
+                    return;
+                }
 
                 if (data.success) {
                     alert('Registration successful! Please login.');
