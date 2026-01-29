@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'https://www.rhylsuperstore.co.uk/api';
 
 // Get auth token from localStorage
 const getToken = () => {

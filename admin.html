@@ -130,6 +130,15 @@
             background: rgba(255, 255, 255, 0.05);
         }
 
+        .category-name-link {
+            color: var(--admin-primary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .category-name-link:hover {
+            text-decoration: underline;
+        }
+
         .menu-item.active {
             background: var(--admin-primary);
             color: white;
@@ -1358,6 +1367,25 @@
                         <button type="submit" class="btn btn-primary">Save Category</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Items Popup (view items in a category) -->
+    <div id="category-items-modal" class="modal">
+        <div class="modal-content" style="max-width: 480px;">
+            <div class="modal-header">
+                <h2 id="category-items-modal-title">Items in category</h2>
+                <span class="close" onclick="closeModal('category-items-modal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p class="text-light" style="margin-bottom: 12px;">Products in this category:</p>
+                <ul id="category-items-list" style="list-style: none; padding: 0; margin: 0; max-height: 360px; overflow-y: auto;">
+                    <!-- JS filled -->
+                </ul>
+                <div class="modal-footer" style="margin-top: 16px;">
+                    <button type="button" class="btn btn-primary" onclick="closeModal('category-items-modal')">Close</button>
+                </div>
             </div>
         </div>
     </div>

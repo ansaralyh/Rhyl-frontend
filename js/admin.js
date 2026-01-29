@@ -1,5 +1,5 @@
 // --- DATA MANAGEMENT & API CALLS ---
-const API_URL = 'https://rhyl-backend.vercel.app/api';
+const API_URL = 'https://www.rhylsuperstore.co.uk/api';
 
 function getAuthHeaders() {
     const token = localStorage.getItem('token');
@@ -383,6 +383,39 @@ window.closeModal = function (id) {
     }
 };
 
+function updateLivePreview() {
+    const container = document.getElementById('live-preview-container');
+    if (!container) return;
+    const name = (document.getElementById('p-name') && document.getElementById('p-name').value) || '';
+    const priceVal = document.getElementById('p-price') && document.getElementById('p-price').value;
+    const discountVal = document.getElementById('p-discount') && document.getElementById('p-discount').value;
+    const price = parseFloat(priceVal) || 0;
+    const discount = Math.min(100, Math.max(0, parseInt(discountVal, 10) || 0));
+    const currentPrice = price * (1 - discount / 100);
+
+    if (!name && price === 0) {
+        container.innerHTML = '<div class="preview-placeholder">Enter product details to see preview</div>';
+        return;
+    }
+    let priceHtml = '';
+    if (discount > 0) {
+        priceHtml = `<div style="margin-top:8px;"><span style="color:#dc2626;text-decoration:line-through;font-weight:700;">£${price.toFixed(2)}</span> <span style="color:#2563eb;font-weight:800;">£${currentPrice.toFixed(2)}</span></div>`;
+    } else {
+        priceHtml = `<div style="margin-top:8px;"><span style="color:#2563eb;font-weight:800;">£${price.toFixed(2)}</span></div>`;
+    }
+    container.innerHTML = `
+        <div style="padding:12px;">
+            <div style="font-weight:700;font-size:1rem;">${name || 'Product title'}</div>
+            ${priceHtml}
+        </div>
+    `;
+}
+
+['p-name', 'p-price', 'p-discount'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', updateLivePreview);
+});
+
 // Store product images array
 let productImages = [];
 let productFiles = new Map(); // Store File objects for upload
@@ -564,6 +597,7 @@ if (productForm) {
         const productData = {
             name: document.getElementById('p-name').value,
             price: parseFloat(document.getElementById('p-price').value),
+            discount: parseInt(document.getElementById('p-discount').value) || 0,
             category: document.getElementById('p-category').value,
             image: imageUrls[0], // First image is main image
             images: imageUrls, // All images array
@@ -635,10 +669,12 @@ window.editProduct = async function (id) {
 
             document.getElementById('p-name').value = p.name;
             document.getElementById('p-price').value = p.price;
+            document.getElementById('p-discount').value = p.discount || 0;
             document.getElementById('p-stock').value = p.stock || 0;
             document.getElementById('p-description').value = p.description || '';
             document.getElementById('p-image-url').value = '';
-            
+            updateLivePreview();
+
             // Load multiple images if available
             productImages = [];
             productFiles.clear();
@@ -678,6 +714,45 @@ async function fetchCategories() {
     }
 }
 
+async function fetchProductsByCategory(categoryId) {
+    try {
+        const response = await fetch(`${API_URL}/products?limit=200&category=${categoryId}`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        return data.success ? data.data : [];
+    } catch (e) {
+        console.error(e);
+        return [];
+    }
+}
+
+// Default items shown for Catering when no products from API (or merged with API list)
+const CATERING_DEFAULT_ITEMS = ['Frozen', 'Chips', 'Nuggets', 'Cheese Burgers', 'Lamb Doner', 'Chicken Doner', 'Drinks', 'Cleaning', 'Oil', 'Packaging', 'Flour'];
+
+window.openCategoryItemsModal = async function (categoryId, categoryName) {
+    const titleEl = document.getElementById('category-items-modal-title');
+    const listEl = document.getElementById('category-items-list');
+    if (!titleEl || !listEl) return;
+    const modalEl = document.getElementById('category-items-modal');
+    titleEl.innerText = 'Items in: ' + (categoryName || 'Category');
+    listEl.innerHTML = '<li class="text-center text-light" style="padding: 16px;">Loading...</li>';
+    modalEl.style.display = 'flex';
+
+    let products = await fetchProductsByCategory(categoryId);
+    const isCatering = (categoryName || '').toLowerCase() === 'catering';
+    if (products.length === 0 && isCatering) {
+        products = CATERING_DEFAULT_ITEMS.map(name => ({ name }));
+    } else if (products.length === 0) {
+        listEl.innerHTML = '<li class="text-center text-light" style="padding: 16px;">No products in this category.</li>';
+        return;
+    }
+    listEl.innerHTML = products.map(p => `
+        <li style="padding: 10px 12px; border-bottom: 1px solid var(--admin-border); display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-circle" style="font-size: 6px; color: var(--admin-primary);"></i>
+            <strong>${p.name || 'Unnamed'}</strong>
+        </li>
+    `).join('');
+};
+
 window.renderAdminCategories = async function () {
     const list = document.getElementById('admin-category-list');
     list.innerHTML = '<tr><td colspan="5" class="text-center">Loading...</td></tr>';
@@ -691,16 +766,29 @@ window.renderAdminCategories = async function () {
 
     list.innerHTML = categories.map(c => `
         <tr>
-            <td><i class="${c.icon || 'fas fa-box'}" style="font-size: 1.2rem; color: ${c.color || '#0d9488'};"></i></td>
-            <td><strong>${c.name}</strong></td>
+            <td><i class="${(c.icon && c.icon.startsWith('fa')) ? c.icon : 'fas fa-box'}" style="font-size: 1.2rem; color: ${c.color || '#0d9488'};"></i></td>
+            <td>
+                <a href="javascript:void(0)" class="category-name-link" data-cat-id="${c._id}" data-cat-name="${(c.name || '').replace(/"/g, '&quot;')}">${c.name}</a>
+            </td>
             <td>${c.priority || 0}</td>
             <td><span class="status-badge badge-success">Visible</span></td>
             <td>
-                <button class="btn btn-outline btn-sm" onclick="editCategory('${c._id}')"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-outline btn-sm" onclick="deleteCategory('${c._id}')" style="color:var(--danger);"><i class="fas fa-trash"></i></button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation(); openCategoryItemsModal('${c._id}', '${(c.name || '').replace(/'/g, "\\'")}');" title="View items"><i class="fas fa-list"></i></button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="editCategory('${c._id}')"><i class="fas fa-edit"></i></button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="deleteCategory('${c._id}')" style="color:var(--danger);"><i class="fas fa-trash"></i></button>
             </td>
         </tr>
     `).join('');
+
+    list.querySelectorAll('.category-name-link').forEach(link => {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = this.getAttribute('data-cat-id');
+            const name = this.getAttribute('data-cat-name');
+            window.openCategoryItemsModal(id, name);
+        });
+    });
 };
 
 window.openCategoryModal = function () {

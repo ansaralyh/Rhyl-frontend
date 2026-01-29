@@ -1,4 +1,4 @@
-const API_URL = 'https://rhyl-backend.vercel.app/api';
+const API_URL = 'https://www.rhylsuperstore.co.uk/api';
 
 document.addEventListener('alpine:init', () => {
     Alpine.data('indexPage', () => ({
@@ -7,6 +7,7 @@ document.addEventListener('alpine:init', () => {
         cartDrawerOpen: false,
         wishlistDrawerOpen: false,
         shareModalOpen: false,
+        deliveryPopupOpen: false,
         shareProductName: '',
         wishlistCount: 0,
         cartCount: 0,
@@ -206,13 +207,19 @@ document.addEventListener('alpine:init', () => {
             }, 3000);
         },
 
-        // Cart & Wishlist Logic
+        // Cart & Wishlist Logic (use current price after discount)
+        getCurrentPrice(product) {
+            const discount = product.discount || 0;
+            return product.price * (1 - discount / 100);
+        },
         addToCart(product) {
+            const currentPrice = this.getCurrentPrice(product);
+            const cartProduct = { ...product, price: currentPrice };
             const existing = this.cart.find(item => item._id === product._id); // Changed to _id
             if (existing) {
                 existing.quantity++;
             } else {
-                this.cart.push({ ...product, quantity: 1 });
+                this.cart.push({ ...cartProduct, quantity: 1 });
             }
             this.updateCartCount();
             this.showNotification('Added to cart');
