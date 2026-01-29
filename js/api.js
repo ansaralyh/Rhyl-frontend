@@ -1,5 +1,11 @@
-// API Configuration
-const API_BASE_URL = 'https://www.rhylsuperstore.co.uk/api';
+// API Configuration - use local API when on localhost, else production
+const API_URL = (function () {
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') {
+        return 'http://localhost:5000/api';
+    }
+    return 'https://www.rhylsuperstore.co.uk/api';
+})();
 
 // Get auth token from localStorage
 const getToken = () => {
@@ -34,7 +40,7 @@ const removeCurrentUser = () => {
 
 // HTTP request wrapper
 const request = async (endpoint, options = {}) => {
-    const url = `${API_BASE_URL}${endpoint}`;
+    const url = `${API_URL}${endpoint}`;
     const token = getToken();
 
     const headers = {

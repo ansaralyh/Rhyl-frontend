@@ -1,4 +1,11 @@
-const API_URL = 'https://www.rhylsuperstore.co.uk/api';
+// Use local API when on localhost, else production base URL
+const API_URL = (function () {
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') {
+        return 'http://localhost:5000/api';
+    }
+    return 'https://www.rhylsuperstore.co.uk/api';
+})();
 
 document.addEventListener('alpine:init', () => {
     Alpine.data('indexPage', () => ({
