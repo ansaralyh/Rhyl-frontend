@@ -1,10 +1,10 @@
-// API Configuration - use local API when on localhost, else production
+// API Configuration - use local API when on localhost, else deployed backend
 const API_URL = (function () {
     const host = window.location.hostname;
     if (host === 'localhost' || host === '127.0.0.1') {
         return 'http://localhost:5000/api';
     }
-    return 'https://www.rhylsuperstore.co.uk/api';
+    return 'https://rhyl-backend-p5k087495-ansaralyhs-projects.vercel.app/api';
 })();
 
 // Get auth token from localStorage
