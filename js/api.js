@@ -4,7 +4,7 @@ const API_URL = (function () {
     if (host === 'localhost' || host === '127.0.0.1') {
         return 'http://localhost:5000/api';
     }
-    return 'https://rhyl-backend-p5k087495-ansaralyhs-projects.vercel.app/api';
+    return 'https://rhyl-backend.vercel.app/api';
 })();
 
 // Get auth token from localStorage
