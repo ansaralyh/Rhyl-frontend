@@ -395,20 +395,20 @@ function updateLivePreview() {
     if (!container) return;
     const name = (document.getElementById('p-name') && document.getElementById('p-name').value) || '';
     const priceVal = document.getElementById('p-price') && document.getElementById('p-price').value;
-    const discountVal = document.getElementById('p-discount') && document.getElementById('p-discount').value;
+    const currentPriceVal = document.getElementById('p-current-price') && document.getElementById('p-current-price').value;
     const price = parseFloat(priceVal) || 0;
-    const discount = Math.min(100, Math.max(0, parseInt(discountVal, 10) || 0));
-    const currentPrice = price * (1 - discount / 100);
+    const currentPrice = parseFloat(currentPriceVal) || 0;
+    const discount = price > 0 ? Math.max(0, Math.min(100, Math.round((1 - currentPrice / price) * 100))) : 0;
 
     if (!name && price === 0) {
         container.innerHTML = '<div class="preview-placeholder">Enter product details to see preview</div>';
         return;
     }
     let priceHtml = '';
-    if (discount > 0) {
-        priceHtml = `<div style="margin-top:8px;"><span style="color:#dc2626;text-decoration:line-through;font-weight:700;">£${price.toFixed(2)}</span> <span style="color:#2563eb;font-weight:800;">£${currentPrice.toFixed(2)}</span></div>`;
+    if (currentPrice > 0 && currentPrice < price) {
+        priceHtml = `<div style="margin-top:8px;"><span style="color:#dc2626;text-decoration:line-through;font-weight:700;">£${price.toFixed(2)}</span> <span style="color:#2563eb;font-weight:800;">£${currentPrice.toFixed(2)}</span> <span style="color:#059669;font-size:0.85rem;margin-left:5px;">(${discount}% off)</span></div>`;
     } else {
-        priceHtml = `<div style="margin-top:8px;"><span style="color:#2563eb;font-weight:800;">£${price.toFixed(2)}</span></div>`;
+        priceHtml = `<div style="margin-top:8px;"><span style="color:#2563eb;font-weight:800;">£${(currentPrice || price).toFixed(2)}</span></div>`;
     }
     container.innerHTML = `
         <div style="padding:12px;">
@@ -418,7 +418,7 @@ function updateLivePreview() {
     `;
 }
 
-['p-name', 'p-price', 'p-discount'].forEach(id => {
+['p-name', 'p-price', 'p-current-price'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', updateLivePreview);
 });
@@ -448,7 +448,7 @@ if (productForm) {
     }
 
     // Function to add image preview
-    window.addImagePreview = function(src, name, type) {
+    window.addImagePreview = function (src, name, type) {
         const imageId = 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         const imageData = { id: imageId, src: src, name: name, type: type };
         productImages.push(imageData);
@@ -457,14 +457,14 @@ if (productForm) {
         const previewDiv = document.createElement('div');
         previewDiv.id = imageId;
         previewDiv.style.cssText = 'position: relative; border: 2px solid var(--admin-border); border-radius: 12px; overflow: hidden; aspect-ratio: 1; background: var(--admin-bg); box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s ease; cursor: pointer;';
-        previewDiv.onmouseenter = function() { this.style.transform = 'scale(1.05)'; this.style.borderColor = 'var(--admin-primary)'; };
-        previewDiv.onmouseleave = function() { this.style.transform = 'scale(1)'; this.style.borderColor = 'var(--admin-border)'; };
-        
+        previewDiv.onmouseenter = function () { this.style.transform = 'scale(1.05)'; this.style.borderColor = 'var(--admin-primary)'; };
+        previewDiv.onmouseleave = function () { this.style.transform = 'scale(1)'; this.style.borderColor = 'var(--admin-border)'; };
+
         const img = document.createElement('img');
         img.src = src;
         img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; display: block;';
         img.alt = name;
-        img.onerror = function() {
+        img.onerror = function () {
             this.src = 'https://via.placeholder.com/200?text=Image+Error';
         };
 
@@ -472,14 +472,14 @@ if (productForm) {
         removeBtn.type = 'button';
         removeBtn.style.cssText = 'position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; background: rgba(239, 68, 68, 0.9); color: white; border: none; border-radius: 50%; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2);';
         removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-        removeBtn.onmouseenter = function() { this.style.background = 'rgba(239, 68, 68, 1)'; this.style.transform = 'scale(1.1)'; };
-        removeBtn.onmouseleave = function() { this.style.background = 'rgba(239, 68, 68, 0.9)'; this.style.transform = 'scale(1)'; };
+        removeBtn.onmouseenter = function () { this.style.background = 'rgba(239, 68, 68, 1)'; this.style.transform = 'scale(1.1)'; };
+        removeBtn.onmouseleave = function () { this.style.background = 'rgba(239, 68, 68, 0.9)'; this.style.transform = 'scale(1)'; };
         removeBtn.onclick = (e) => { e.stopPropagation(); removeImage(imageId); };
 
         const label = document.createElement('div');
         label.style.cssText = 'position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); color: white; padding: 8px 6px 6px; font-size: 10px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-weight: 500;';
         label.textContent = type === 'file' ? (name.length > 15 ? name.substring(0, 15) + '...' : name) : 'URL Image';
-        
+
         // Add MAIN label for first image
         if (productImages.length === 1) {
             const mainLabel = document.createElement('div');
@@ -493,12 +493,12 @@ if (productForm) {
         previewDiv.appendChild(label);
         container.appendChild(previewDiv);
         container.style.display = 'grid';
-        
+
         return imageId;
     };
 
     // Function to add image from URL
-    window.addImageFromUrl = function() {
+    window.addImageFromUrl = function () {
         const urlInput = document.getElementById('p-image-url');
         const url = urlInput.value.trim();
         if (url) {
@@ -510,7 +510,7 @@ if (productForm) {
     };
 
     // Function to remove image
-    window.removeImage = function(imageId) {
+    window.removeImage = function (imageId) {
         productImages = productImages.filter(img => img.id !== imageId);
         productFiles.delete(imageId); // Remove file from map
         const previewDiv = document.getElementById(imageId);
@@ -540,7 +540,7 @@ if (productForm) {
                     mainLabel = label;
                 }
             });
-            
+
             if (index === 0 && !mainLabel) {
                 mainLabel = document.createElement('div');
                 mainLabel.style.cssText = 'position: absolute; top: 8px; left: 8px; background: var(--admin-primary); color: white; padding: 4px 8px; border-radius: 6px; font-size: 9px; font-weight: bold; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.2); text-transform: uppercase; letter-spacing: 0.5px;';
@@ -555,7 +555,12 @@ if (productForm) {
     productForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const mode = productForm.dataset.mode;
-        const id = productForm.dataset.id;
+        const submitBtn = productForm.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+
+        // Disable button to prevent duplicates
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
 
         // Upload all file images first
         const fileImages = productImages.filter(img => img.type === 'file');
@@ -582,11 +587,15 @@ if (productForm) {
                         uploadedImageUrls.push(uploadResult.data.path);
                     } else {
                         alert('Image upload failed: ' + uploadResult.message);
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
                         return;
                     }
                 } catch (err) {
                     console.error('Upload error:', err);
                     alert('Failed to upload image: ' + imgData.name);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
                     return;
                 }
             }
@@ -601,10 +610,14 @@ if (productForm) {
             imageUrls.push('https://via.placeholder.com/300x310');
         }
 
+        const originalPrice = parseFloat(document.getElementById('p-price').value);
+        const currentPrice = parseFloat(document.getElementById('p-current-price').value) || originalPrice;
+        const discount = originalPrice > 0 ? Math.max(0, Math.min(100, Math.round((1 - currentPrice / originalPrice) * 100))) : 0;
+
         const productData = {
             name: document.getElementById('p-name').value,
-            price: parseFloat(document.getElementById('p-price').value),
-            discount: parseInt(document.getElementById('p-discount').value) || 0,
+            price: originalPrice,
+            discount: discount,
             category: document.getElementById('p-category').value,
             image: imageUrls[0], // First image is main image
             images: imageUrls, // All images array
@@ -637,6 +650,10 @@ if (productForm) {
         } catch (err) {
             console.error(err);
             alert('Server error');
+        } finally {
+            // Re-enable button after completion (either success or failure)
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
         }
     });
 }
@@ -676,7 +693,8 @@ window.editProduct = async function (id) {
 
             document.getElementById('p-name').value = p.name;
             document.getElementById('p-price').value = p.price;
-            document.getElementById('p-discount').value = p.discount || 0;
+            const currentPrice = p.price * (1 - (p.discount || 0) / 100);
+            document.getElementById('p-current-price').value = currentPrice.toFixed(2);
             document.getElementById('p-stock').value = p.stock || 0;
             document.getElementById('p-description').value = p.description || '';
             document.getElementById('p-image-url').value = '';
@@ -687,7 +705,7 @@ window.editProduct = async function (id) {
             productFiles.clear();
             const container = document.getElementById('images-preview-container');
             container.innerHTML = '';
-            
+
             // If product has images array, load all of them
             if (p.images && Array.isArray(p.images) && p.images.length > 0) {
                 p.images.forEach((imgUrl, index) => {
@@ -697,7 +715,7 @@ window.editProduct = async function (id) {
                 // Fallback to single image
                 addImagePreview(p.image, 'Product Image', 'url');
             }
-            
+
             // Set Category
             if (p.category) {
                 const catId = typeof p.category === 'object' ? p.category._id : p.category;
