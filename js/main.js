@@ -16,9 +16,8 @@ document.addEventListener('alpine:init', () => {
         shareModalOpen: false,
         deliveryPopupOpen: false,
         shareProductName: '',
-        wishlistCount: 0,
-        cartCount: 0,
         cartTotal: 0,
+        cateringDefaultItems: ['Frozen', 'Chips', 'Nuggets', 'Cheese Burgers', 'Lamb Doner', 'Chicken Doner', 'Drinks', 'Cleaning', 'Oil', 'Packaging', 'Flour'],
         isLoggedIn: false,
         isAdminLoggedIn: false,
         user: { name: 'Guest' },
@@ -91,11 +90,10 @@ document.addEventListener('alpine:init', () => {
         beverages: [],
         householdCleaning: [],
         personalCare: [],
-        pakistaniProducts: [],
-        indianProducts: [],
+        asianProducts: [],
         africanProducts: [],
-        filipinoProducts: [],
         babyProducts: [],
+        cateringProducts: [],
 
         sliderProducts: [],
         topProducts: [],
@@ -117,6 +115,13 @@ document.addEventListener('alpine:init', () => {
             await this.fetchProducts();
 
             this.updateCartCount();
+
+            // Open drawer if hash exists
+            if (window.location.hash === '#cart') {
+                this.cartDrawerOpen = true;
+            } else if (window.location.hash === '#wishlist') {
+                this.wishlistDrawerOpen = true;
+            }
 
             // Start sliders
             this.startHeroBannerSlider();
@@ -164,18 +169,16 @@ document.addEventListener('alpine:init', () => {
                     this.householdCleaning = allProducts.filter(p => getCatName(p) === 'Household');
                     this.personalCare = allProducts.filter(p => getCatName(p) === 'Personal Care');
 
-                    this.pakistaniProducts = allProducts.filter(p => getCatName(p) === 'Pakistani Product');
-                    this.indianProducts = allProducts.filter(p => getCatName(p) === 'Indian Product');
+                    this.asianProducts = allProducts.filter(p => ['Pakistani Product', 'Indian Product', 'Filipino Product', 'Asian Products'].includes(getCatName(p)));
                     this.africanProducts = allProducts.filter(p => getCatName(p) === 'African Product');
-                    this.filipinoProducts = allProducts.filter(p => getCatName(p) === 'Filipino Product');
                     this.babyProducts = allProducts.filter(p => getCatName(p) === 'Baby Care');
+                    this.cateringProducts = allProducts.filter(p => getCatName(p) === 'Catering');
 
                     // Debug logging
                     console.log('Total products loaded:', allProducts.length);
-                    console.log('Pakistani Products:', this.pakistaniProducts.length);
-                    console.log('Indian Products:', this.indianProducts.length);
+                    console.log('Asian Products:', this.asianProducts.length);
                     console.log('African Products:', this.africanProducts.length);
-                    console.log('Filipino Products:', this.filipinoProducts.length);
+                    console.log('Catering Products:', this.cateringProducts.length);
 
                     // Slider & Top Products Logic
                     this.sliderProducts = allProducts.filter(p => p.featured || p.rating >= 4.5).slice(0, 5);

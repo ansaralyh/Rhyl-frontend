@@ -29,7 +29,8 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16 md:h-24 gap-2 md:gap-8">
                     <!-- Back Button -->
-                    <a href="index.html" class="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors">
+                    <a href="index.html"
+                        class="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors">
                         <i data-lucide="arrow-left" class="w-5 h-5"></i>
                         <span class="font-bold">Back</span>
                     </a>
@@ -40,19 +41,23 @@
                             class="h-10 md:h-16 w-auto object-contain transition-transform group-hover:scale-105"
                             style="border-radius: 1000px; filter: grayscale(100%) sepia(100%) hue-rotate(190deg) saturate(500%) contrast(120%);">
                         <div class="flex flex-col">
-                            <span class="text-base md:text-xl font-black text-red-600 tracking-tight leading-none transition-colors">Super</span>
-                            <span class="text-[10px] md:text-sm font-bold text-red-600 tracking-widest uppercase leading-none">Store</span>
+                            <span
+                                class="text-base md:text-xl font-black text-red-600 tracking-tight leading-none transition-colors">Super</span>
+                            <span
+                                class="text-[10px] md:text-sm font-bold text-red-600 tracking-widest uppercase leading-none">Store</span>
                         </div>
                     </a>
 
                     <!-- Cart & Wishlist -->
                     <div class="flex items-center gap-4">
-                        <a href="index.html#wishlist" class="relative p-2 text-slate-600 hover:text-red-500 transition-colors">
+                        <a href="index.html#wishlist"
+                            class="relative p-2 text-slate-600 hover:text-red-500 transition-colors">
                             <i data-lucide="heart" class="w-6 h-6"></i>
                             <span x-show="wishlistCount > 0" x-text="wishlistCount"
                                 class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-black rounded-full w-5 h-5 flex items-center justify-center"></span>
                         </a>
-                        <a href="index.html#cart" class="relative p-2 text-slate-600 hover:text-blue-600 transition-colors">
+                        <a href="checkout.html"
+                            class="relative p-2 text-slate-600 hover:text-blue-600 transition-colors">
                             <i data-lucide="shopping-cart" class="w-6 h-6"></i>
                             <span x-show="cartCount > 0" x-text="cartCount"
                                 class="absolute -top-1 -right-1 bg-blue-600 text-white text-xs font-black rounded-full w-5 h-5 flex items-center justify-center"></span>
@@ -79,7 +84,8 @@
             </div>
             <h2 class="text-2xl font-black text-slate-900">Product Not Found</h2>
             <p class="text-slate-600" x-text="error"></p>
-            <a href="index.html" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors">
+            <a href="index.html"
+                class="inline-block bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors">
                 Back to Home
             </a>
         </div>
@@ -91,7 +97,8 @@
             <!-- Left Side: Image Gallery -->
             <div class="space-y-6">
                 <!-- Main Image -->
-                <div class="relative aspect-square bg-slate-50 rounded-3xl overflow-hidden flex items-center justify-center p-8 border border-slate-200">
+                <div
+                    class="relative aspect-square bg-slate-50 rounded-3xl overflow-hidden flex items-center justify-center p-8 border border-slate-200">
                     <img :src="getProductImages()[selectedImageIndex]" :alt="product.name"
                         class="max-w-full max-h-full object-contain drop-shadow-2xl">
                 </div>
@@ -102,8 +109,7 @@
                         <button @click="selectImage(index)"
                             class="flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all"
                             :class="selectedImageIndex === index ? 'border-blue-600 ring-4 ring-blue-100' : 'border-slate-200 hover:border-slate-300'">
-                            <img :src="img" :alt="product.name + ' ' + (index + 1)"
-                                class="w-full h-full object-cover">
+                            <img :src="img" :alt="product.name + ' ' + (index + 1)" class="w-full h-full object-cover">
                         </button>
                     </template>
                 </div>
@@ -113,7 +119,8 @@
             <div class="flex flex-col space-y-6 lg:pt-8">
                 <!-- Product ID & Category -->
                 <div class="flex items-center gap-3 flex-wrap">
-                    <span class="bg-slate-100 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider text-slate-600"
+                    <span
+                        class="bg-slate-100 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider text-slate-600"
                         x-text="'ID: #' + product._id.substring(product._id.length - 6)"></span>
                     <span x-show="product.category"
                         class="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full text-xs font-bold"
@@ -121,8 +128,7 @@
                 </div>
 
                 <!-- Product Name -->
-                <h1 class="text-4xl lg:text-5xl font-black text-slate-900 leading-tight"
-                    x-text="product.name"></h1>
+                <h1 class="text-4xl lg:text-5xl font-black text-slate-900 leading-tight" x-text="product.name"></h1>
 
                 <!-- Rating -->
                 <div class="flex items-center gap-3">
@@ -155,7 +161,8 @@
                 <div class="space-y-3">
                     <h3 class="text-lg font-black text-slate-900 uppercase tracking-wider">Description</h3>
                     <p class="text-slate-600 leading-relaxed text-lg"
-                        x-text="product.description || 'Premium quality product from Rhyl Super Store. Fresh, authentic, and delivered with care.'"></p>
+                        x-text="product.description || 'Premium quality product from Rhyl Super Store. Fresh, authentic, and delivered with care.'">
+                    </p>
                 </div>
 
                 <!-- Actions -->
@@ -201,8 +208,7 @@
         x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
         @click.self="deliveryPopupOpen = false">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
-            @click.stop
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6" @click.stop
             x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95"
             x-transition:enter-end="opacity-100 scale-100">
             <div class="flex items-center justify-between mb-4">
@@ -210,7 +216,8 @@
                     <i data-lucide="truck" class="w-5 h-5 text-blue-600"></i>
                     Delivery info
                 </h3>
-                <button @click="deliveryPopupOpen = false" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg transition-colors">
+                <button @click="deliveryPopupOpen = false"
+                    class="p-2 text-slate-400 hover:text-slate-600 rounded-lg transition-colors">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -312,7 +319,7 @@
 
                 getProductImages() {
                     if (!this.product) return [];
-                    
+
                     // If product has multiple images array, return them
                     if (this.product.images && Array.isArray(this.product.images) && this.product.images.length > 0) {
                         return this.product.images;
@@ -382,4 +389,3 @@
 </body>
 
 </html>
-
