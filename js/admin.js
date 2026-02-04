@@ -258,7 +258,7 @@ function renderLowStock(lowStockProducts) {
     table.innerHTML = lowStockProducts.map(p => `
         <tr>
             <td><img src="${p.image || 'https://via.placeholder.com/50'}" class="table-img"></td>
-            <td><strong>${p.name}</strong><br><small>${p.category ? p.category.name : 'Uncategorized'}</small></td>
+            <td><strong>${p.name}</strong><br><small>${Array.isArray(p.category) ? p.category.map(c => c.name).join(', ') : (p.category ? p.category.name : 'Uncategorized')}</small></td>
             <td>${p.stock} Units</td>
         </tr>
     `).join('');
@@ -338,7 +338,7 @@ window.renderAdminProducts = async function () {
         <tr>
             <td><img src="${p.image || 'https://via.placeholder.com/50'}" class="table-img" style="width:50px; height:50px; object-fit:cover; border-radius:8px;"></td>
             <td><strong>${p.name}</strong></td>
-            <td>${p.category ? p.category.name : 'Uncategorized'}</td>
+            <td>${Array.isArray(p.category) ? p.category.map(c => c.name).join(', ') : (p.category ? p.category.name : 'Uncategorized')}</td>
             <td>£${p.price.toFixed(2)}</td>
             <td>${p.stock || 0}</td>
             <td><span class="status-badge ${p.stock > 0 ? 'badge-success' : 'badge-danger'}">${p.stock > 0 ? 'In Stock' : 'Out of Stock'}</span></td>
@@ -365,13 +365,18 @@ window.openAddProductModal = async function () {
     container.innerHTML = '';
     container.style.display = 'none';
 
-    // Populate Categories
+    // Populate Categories (Multi-select)
     const categories = await fetchCategories();
-    const catSelect = document.getElementById('p-category');
-    catSelect.innerHTML = '<option value="" disabled selected>Select Category</option>';
-    categories.forEach(c => {
-        catSelect.innerHTML += `<option value="${c._id}">${c.name}</option>`;
-    });
+    const catContainer = document.getElementById('p-categories-container');
+    if (catContainer) {
+        catContainer.innerHTML = categories.map(c => `
+            <label class="checkbox-container" style="margin-bottom: 0; padding: 5px 10px; background: var(--admin-card-bg); border: 1px solid var(--admin-border); border-radius: 20px; font-size: 0.8rem;">
+                <input type="checkbox" name="p-category" value="${c._id}">
+                <span class="checkmark"></span>
+                ${c.name}
+            </label>
+        `).join('');
+    }
 
     document.getElementById('product-modal').style.display = 'flex';
 };
@@ -555,6 +560,7 @@ if (productForm) {
     productForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const mode = productForm.dataset.mode;
+        const id = productForm.dataset.id;
         const submitBtn = productForm.querySelector('button[type="submit"]');
         const originalBtnText = submitBtn.innerHTML;
 
@@ -614,11 +620,13 @@ if (productForm) {
         const currentPrice = parseFloat(document.getElementById('p-current-price').value) || originalPrice;
         const discount = originalPrice > 0 ? Math.max(0, Math.min(100, Math.round((1 - currentPrice / originalPrice) * 100))) : 0;
 
+        const selectedCategories = Array.from(document.querySelectorAll('input[name="p-category"]:checked')).map(cb => cb.value);
+
         const productData = {
             name: document.getElementById('p-name').value,
             price: originalPrice,
             discount: discount,
-            category: document.getElementById('p-category').value,
+            category: selectedCategories,
             image: imageUrls[0], // First image is main image
             images: imageUrls, // All images array
             stock: parseInt(document.getElementById('p-stock').value),
@@ -716,10 +724,17 @@ window.editProduct = async function (id) {
                 addImagePreview(p.image, 'Product Image', 'url');
             }
 
-            // Set Category
+            // Set Category (Multi-select)
             if (p.category) {
-                const catId = typeof p.category === 'object' ? p.category._id : p.category;
-                document.getElementById('p-category').value = catId;
+                const categoryIds = Array.isArray(p.category)
+                    ? p.category.map(c => typeof c === 'object' ? c._id : c)
+                    : [typeof p.category === 'object' ? p.category._id : p.category];
+
+                document.querySelectorAll('input[name="p-category"]').forEach(cb => {
+                    if (categoryIds.includes(cb.value)) {
+                        cb.checked = true;
+                    }
+                });
             }
         }
     } catch (e) {
@@ -962,7 +977,7 @@ window.renderAdminInventory = async function () {
 
         return `
             <tr>
-                <td><strong>${p.name}</strong><br><small>${p.category ? p.category.name : 'Uncategorized'}</small></td>
+                <td><strong>${p.name}</strong><br><small>${Array.isArray(p.category) ? p.category.map(c => c.name).join(', ') : (p.category ? p.category.name : 'Uncategorized')}</small></td>
                 <td>${stock} Units</td>
                 <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                 <td>

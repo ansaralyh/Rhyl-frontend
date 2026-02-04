@@ -94,6 +94,7 @@ document.addEventListener('alpine:init', () => {
         africanProducts: [],
         babyProducts: [],
         cateringProducts: [],
+        thaiPhilippinesProducts: [],
 
         sliderProducts: [],
         topProducts: [],
@@ -156,23 +157,34 @@ document.addEventListener('alpine:init', () => {
                 if (result.success) {
                     const allProducts = result.data;
 
-                    const getCatName = (p) => p.category ? (p.category.name || p.category) : '';
+                    const getCatNames = (p) => {
+                        if (!p.category) return [];
+                        if (Array.isArray(p.category)) {
+                            return p.category.map(c => c.name || c);
+                        }
+                        return [p.category.name || p.category];
+                    };
+                    const hasCategory = (p, catName) => getCatNames(p).includes(catName);
 
-                    this.freshProduce = allProducts.filter(p => getCatName(p) === 'Fresh Produce');
-                    this.groceryStaples = allProducts.filter(p => getCatName(p) === 'Grocery & Staples');
-                    this.spicesMasala = allProducts.filter(p => getCatName(p) === 'Spices & Masala');
-                    this.dairyProducts = allProducts.filter(p => getCatName(p) === 'Dairy Products');
-                    this.meatFrozen = allProducts.filter(p => getCatName(p) === 'Meat & Frozen');
-                    this.packagedCanned = allProducts.filter(p => getCatName(p) === 'Packaged Food');
-                    this.snacksBakery = allProducts.filter(p => getCatName(p) === 'Snacks & Bakery');
-                    this.beverages = allProducts.filter(p => getCatName(p) === 'Beverages');
-                    this.householdCleaning = allProducts.filter(p => getCatName(p) === 'Household');
-                    this.personalCare = allProducts.filter(p => getCatName(p) === 'Personal Care');
+                    this.freshProduce = allProducts.filter(p => hasCategory(p, 'Fresh Produce'));
+                    this.groceryStaples = allProducts.filter(p => hasCategory(p, 'Grocery & Staples'));
+                    this.spicesMasala = allProducts.filter(p => hasCategory(p, 'Spices & Masala'));
+                    this.dairyProducts = allProducts.filter(p => hasCategory(p, 'Dairy Products'));
+                    this.meatFrozen = allProducts.filter(p => hasCategory(p, 'Meat & Frozen'));
+                    this.packagedCanned = allProducts.filter(p => hasCategory(p, 'Packaged Food'));
+                    this.snacksBakery = allProducts.filter(p => hasCategory(p, 'Snacks & Bakery'));
+                    this.beverages = allProducts.filter(p => hasCategory(p, 'Beverages'));
+                    this.householdCleaning = allProducts.filter(p => hasCategory(p, 'Household'));
+                    this.personalCare = allProducts.filter(p => hasCategory(p, 'Personal Care'));
 
-                    this.asianProducts = allProducts.filter(p => ['Pakistani Product', 'Indian Product', 'Filipino Product', 'Asian Products'].includes(getCatName(p)));
-                    this.africanProducts = allProducts.filter(p => getCatName(p) === 'African Product');
-                    this.babyProducts = allProducts.filter(p => getCatName(p) === 'Baby Care');
-                    this.cateringProducts = allProducts.filter(p => getCatName(p) === 'Catering');
+                    this.asianProducts = allProducts.filter(p => {
+                        const names = getCatNames(p);
+                        return ['Pakistani Product', 'Indian Product', 'Filipino Product', 'Asian Products'].some(name => names.includes(name));
+                    });
+                    this.africanProducts = allProducts.filter(p => hasCategory(p, 'African Product'));
+                    this.babyProducts = allProducts.filter(p => hasCategory(p, 'Baby Care'));
+                    this.cateringProducts = allProducts.filter(p => hasCategory(p, 'Catering'));
+                    this.thaiPhilippinesProducts = allProducts.filter(p => hasCategory(p, 'Thai and philippines Products'));
 
                     // Debug logging
                     console.log('Total products loaded:', allProducts.length);
