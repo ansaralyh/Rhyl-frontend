@@ -179,7 +179,7 @@ document.addEventListener('alpine:init', () => {
 
                     this.asianProducts = allProducts.filter(p => {
                         const names = getCatNames(p);
-                        return ['Pakistani Product', 'Indian Product', 'Filipino Product', 'Asian Products'].some(name => names.includes(name));
+                        return ['Pakistani Product', 'Indian Product', 'Asian Products'].some(name => names.includes(name));
                     });
                     this.africanProducts = allProducts.filter(p => hasCategory(p, 'African Product'));
                     this.babyProducts = allProducts.filter(p => hasCategory(p, 'Baby Care'));

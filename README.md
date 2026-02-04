@@ -196,7 +196,6 @@ For detailed API documentation, see [Backend README](backend/README.md)
 - Pakistani Products
 - Indian Products
 - African Products
-- Filipino Products
 
 ### Shopping Experience
 - **Hero Banner**: Rotating promotional banners
