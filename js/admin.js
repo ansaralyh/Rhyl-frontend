@@ -350,6 +350,118 @@ window.renderAdminProducts = async function () {
     `).join('');
 };
 
+// --- CATEGORY SELECTION UI LOGIC ---
+window.toggleCategoryDropdown = function () {
+    const dropdown = document.getElementById('category-dropdown');
+    if (dropdown) dropdown.classList.toggle('show');
+};
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function (e) {
+    const wrapper = document.getElementById('category-select-wrapper');
+    const dropdown = document.getElementById('category-dropdown');
+    if (wrapper && !wrapper.contains(e.target)) {
+        if (dropdown) dropdown.classList.remove('show');
+    }
+});
+
+window.renderCategoryDropdown = async function (selectedIds = []) {
+    const container = document.getElementById('p-categories-list');
+    if (!container) return;
+
+    const categories = await fetchCategories();
+
+    // Grouping logic
+    const groups = {
+        'REGIONAL': [],
+        'FRESH & GROCERY': [],
+        'OTHER': []
+    };
+
+    categories.forEach(c => {
+        const name = c.name.toLowerCase();
+        if (name.includes('asian') || name.includes('african') || name.includes('european') || name.includes('american') || name.includes('middle eastern')) {
+            groups['REGIONAL'].push(c);
+        } else if (name.includes('fresh') || name.includes('grocery') || name.includes('dairy') || name.includes('meat') || name.includes('produce')) {
+            groups['FRESH & GROCERY'].push(c);
+        } else {
+            groups['OTHER'].push(c);
+        }
+    });
+
+    let html = '';
+    for (const [groupName, catItems] of Object.entries(groups)) {
+        if (catItems.length > 0) {
+            html += `<div class="category-group-header">${groupName}</div>`;
+            catItems.forEach(c => {
+                const isSelected = selectedIds.includes(c._id);
+                html += `
+                    <div class="category-item" onclick="toggleCategorySelection('${c._id}', '${c.name.replace(/'/g, "\\'")}')">
+                        <input type="checkbox" name="p-category" value="${c._id}" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); updateCategoryButtonText();">
+                        <span>${c.name}</span>
+                    </div>
+                `;
+            });
+        }
+    }
+
+    container.innerHTML = html || '<div style="padding: 15px; text-align: center; color: #94a3b8;">No categories found</div>';
+    updateCategoryButtonText();
+};
+
+window.toggleCategorySelection = function (id, name) {
+    const checkboxes = document.querySelectorAll(`input[name="p-category"][value="${id}"]`);
+    if (checkboxes.length > 0) {
+        checkboxes[0].checked = !checkboxes[0].checked;
+        updateCategoryButtonText();
+    }
+};
+
+window.filterCategoryList = function (query) {
+    const q = query.toLowerCase();
+    const items = document.querySelectorAll('.category-item');
+    const headers = document.querySelectorAll('.category-group-header');
+
+    items.forEach(item => {
+        const text = item.querySelector('span').innerText.toLowerCase();
+        if (text.includes(q)) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+
+    // Hide headers if no items are visible in that group
+    headers.forEach(header => {
+        let sibling = header.nextElementSibling;
+        let hasVisibleItems = false;
+        while (sibling && sibling.classList.contains('category-item')) {
+            if (sibling.style.display === 'flex') {
+                hasVisibleItems = true;
+                break;
+            }
+            sibling = sibling.nextElementSibling;
+        }
+        header.style.display = hasVisibleItems ? 'block' : 'none';
+    });
+};
+
+window.updateCategoryButtonText = function () {
+    const container = document.getElementById('selected-categories-tags');
+    if (!container) return;
+
+    const selected = Array.from(document.querySelectorAll('input[name="p-category"]:checked')).map(cb => {
+        const item = cb.closest('.category-item');
+        return item ? item.querySelector('span').innerText : '';
+    });
+
+    if (selected.length === 0) {
+        container.innerHTML = '<span style="color: var(--admin-text-light);">Select categories...</span>';
+    } else {
+        container.innerHTML = selected.map(name => `<span class="tag">${name}</span>`).join('');
+    }
+};
+
 window.openAddProductModal = async function () {
     document.getElementById('modal-title').innerText = 'Add New Product';
     const form = document.getElementById('product-form');
@@ -365,18 +477,12 @@ window.openAddProductModal = async function () {
     container.innerHTML = '';
     container.style.display = 'none';
 
-    // Populate Categories (Multi-select)
-    const categories = await fetchCategories();
-    const catContainer = document.getElementById('p-categories-container');
-    if (catContainer) {
-        catContainer.innerHTML = categories.map(c => `
-            <label class="checkbox-container" style="margin-bottom: 0; padding: 5px 10px; background: var(--admin-card-bg); border: 1px solid var(--admin-border); border-radius: 20px; font-size: 0.8rem;">
-                <input type="checkbox" name="p-category" value="${c._id}">
-                <span class="checkmark"></span>
-                ${c.name}
-            </label>
-        `).join('');
-    }
+    // Reset search
+    const searchInput = document.getElementById('category-search');
+    if (searchInput) searchInput.value = '';
+
+    // Populate Categories Dropdown
+    await renderCategoryDropdown();
 
     document.getElementById('product-modal').style.display = 'flex';
 };
@@ -724,17 +830,19 @@ window.editProduct = async function (id) {
                 addImagePreview(p.image, 'Product Image', 'url');
             }
 
+            // Reset search
+            const searchInput = document.getElementById('category-search');
+            if (searchInput) searchInput.value = '';
+
             // Set Category (Multi-select)
             if (p.category) {
                 const categoryIds = Array.isArray(p.category)
                     ? p.category.map(c => typeof c === 'object' ? c._id : c)
                     : [typeof p.category === 'object' ? p.category._id : p.category];
 
-                document.querySelectorAll('input[name="p-category"]').forEach(cb => {
-                    if (categoryIds.includes(cb.value)) {
-                        cb.checked = true;
-                    }
-                });
+                await renderCategoryDropdown(categoryIds);
+            } else {
+                await renderCategoryDropdown();
             }
         }
     } catch (e) {

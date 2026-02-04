@@ -39,7 +39,7 @@
 - **Pakistani Product**
 - **Indian Product**
 - **African Product**
-- **Filipino Product**
+- **Asian Products** (Pakistani, Indian, etc.)
 
 ## Example Product Images in Your Project
 You already have many images in the `images` folder:
