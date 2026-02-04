@@ -124,7 +124,7 @@
                         x-text="'ID: #' + product._id.substring(product._id.length - 6)"></span>
                     <span x-show="product.category"
                         class="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full text-xs font-bold"
-                        x-text="getCategoryName()"></span>
+                        x-text="getCategoryNames()"></span>
                 </div>
 
                 <!-- Product Name -->
@@ -336,8 +336,11 @@
                     this.selectedImageIndex = index;
                 },
 
-                getCategoryName() {
+                getCategoryNames() {
                     if (!this.product || !this.product.category) return '';
+                    if (Array.isArray(this.product.category)) {
+                        return this.product.category.map(c => typeof c === 'object' ? c.name : c).join(', ');
+                    }
                     return typeof this.product.category === 'object' ? this.product.category.name : this.product.category;
                 },
 

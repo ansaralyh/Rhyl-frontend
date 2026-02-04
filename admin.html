@@ -1259,11 +1259,13 @@
                                 <input type="text" class="form-control" id="p-name" placeholder="e.g. Sony WH-1000XM5"
                                     required>
                             </div>
-                            <div class="form-group" style="width: 150px;">
-                                <label>Category</label>
-                                <select class="form-control" id="p-category">
-                                    <option value="" disabled selected>Select Category</option>
-                                </select>
+                            <div class="form-group flex-1">
+                                <label>Categories</label>
+                                <div id="p-categories-container" class="form-control"
+                                    style="height: auto; min-height: 45px; max-height: 150px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; background: var(--admin-bg);">
+                                    <!-- Category checkboxes will be injected here -->
+                                    <span class="text-light" style="font-size: 0.85rem;">Loading categories...</span>
+                                </div>
                             </div>
                         </div>
 
