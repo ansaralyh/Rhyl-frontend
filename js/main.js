@@ -101,9 +101,16 @@ document.addEventListener('alpine:init', () => {
         cart: [],
         wishlist: [],
 
+        devPopupOpen: false,
+        countdown: { hours: 10, minutes: 0 },
+
         async init() {
             this.isAdminLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
             this.isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+
+            // Development Popup Logic
+            this.initCountdown();
+            this.devPopupOpen = true;
 
             // Load cart/wishlist from local storage (client-side persist only for now)
             const savedCart = localStorage.getItem('cart');
@@ -238,6 +245,38 @@ document.addEventListener('alpine:init', () => {
             setInterval(() => {
                 this.beverageBannerIndex = (this.beverageBannerIndex + 1) % this.beverageBannerSlides.length;
             }, 3000);
+        },
+
+        initCountdown() {
+            const duration = 10 * 60 * 60 * 1000; // 10 hours
+            let targetTime = localStorage.getItem('dev_target_time');
+
+            if (!targetTime) {
+                targetTime = Date.now() + duration;
+                localStorage.setItem('dev_target_time', targetTime);
+            } else {
+                targetTime = parseInt(targetTime);
+                if (Date.now() > targetTime) {
+                    targetTime = Date.now() + duration;
+                    localStorage.setItem('dev_target_time', targetTime);
+                }
+            }
+
+            const update = () => {
+                const now = Date.now();
+                const diff = targetTime - now;
+
+                if (diff <= 0) {
+                    this.countdown = { hours: 0, minutes: 0 };
+                    return;
+                }
+
+                this.countdown.hours = Math.floor(diff / (1000 * 60 * 60));
+                this.countdown.minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            };
+
+            update();
+            setInterval(update, 60000);
         },
 
         // Cart & Wishlist Logic (use current price after discount)
