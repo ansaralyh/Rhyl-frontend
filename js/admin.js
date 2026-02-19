@@ -1,12 +1,5 @@
 // --- DATA MANAGEMENT & API CALLS ---
-// Use local API when on localhost, else deployed backend base URL
-const API_URL = (function () {
-    const host = window.location.hostname;
-    if (host === 'localhost' || host === '127.0.0.1') {
-        return 'http://localhost:5000/api';
-    }
-    return 'https://rhyl-backend.vercel.app/api';
-})();
+// API_URL is now provided by api.js to avoid re-declaration errors
 
 function getAuthHeaders() {
     const token = localStorage.getItem('token');
@@ -68,14 +61,14 @@ if (loginForm) {
                     localStorage.setItem('adminLoggedIn', 'true');
                     showAdminPanel();
                 } else {
-                    alert('Access denied: You are not an admin.');
+                    if (typeof window.showToast === 'function') window.showToast('Access denied: You are not an admin.', 'error');
                 }
             } else {
-                alert(data.message || 'Invalid credentials');
+                if (typeof window.showToast === 'function') window.showToast(data.message || 'Invalid credentials', 'error');
             }
         } catch (err) {
             console.error(err);
-            alert('Login failed. Please try again.');
+            if (typeof window.showToast === 'function') window.showToast('Login failed. Please try again.', 'error');
         }
     });
 }
@@ -90,7 +83,8 @@ function logout() {
     localStorage.removeItem('adminLoggedIn');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = 'index.html';
+    if (typeof window.showToast === 'function') window.showToast('You have been logged out.', 'success');
+    setTimeout(function () { window.location.href = 'store.html'; }, 800);
 }
 
 window.toggleMobileSidebar = function () {
@@ -616,7 +610,7 @@ if (productForm) {
             addImagePreview(url, 'URL Image', 'url');
             urlInput.value = '';
         } else {
-            alert('Please enter an image URL');
+            (window.showToast && window.showToast('Please enter an image URL', 'error'));
         }
     };
 
@@ -698,14 +692,14 @@ if (productForm) {
                     if (uploadResult.success) {
                         uploadedImageUrls.push(uploadResult.data.path);
                     } else {
-                        alert('Image upload failed: ' + uploadResult.message);
+                        (window.showToast && window.showToast('Image upload failed: ' + uploadResult.message, 'error'));
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = originalBtnText;
                         return;
                     }
                 } catch (err) {
                     console.error('Upload error:', err);
-                    alert('Failed to upload image: ' + imgData.name);
+                    (window.showToast && window.showToast('Failed to upload image: ' + imgData.name, 'error'));
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalBtnText;
                     return;
@@ -752,18 +746,18 @@ if (productForm) {
             const res = await response.json();
 
             if (res.success) {
-                alert('Product Saved Successfully!');
+                if (window.showToast) window.showToast('Product Saved Successfully!', 'success');
                 closeModal('product-modal');
                 renderAdminProducts();
                 // Refresh dashboard stats as they might have changed
                 const stats = await fetchDashboardStats();
                 if (stats) updateStats(stats);
             } else {
-                alert(res.message || 'Error saving product');
+                if (window.showToast) window.showToast(res.message || 'Error saving product', 'error');
             }
         } catch (err) {
             console.error(err);
-            alert('Server error');
+            if (window.showToast) window.showToast('Server error', 'error');
         } finally {
             // Re-enable button after completion (either success or failure)
             submitBtn.disabled = false;
@@ -784,10 +778,10 @@ window.deleteProduct = async function (id) {
                 const stats = await fetchDashboardStats();
                 if (stats) updateStats(stats);
             } else {
-                alert('Failed to delete product');
+                if (window.showToast) window.showToast('Failed to delete product', 'error');
             }
         } catch (e) {
-            alert('Server error');
+            if (window.showToast) window.showToast('Server error', 'error');
         }
     }
 };
@@ -967,13 +961,13 @@ window.saveCategory = async function (e) {
 
         const res = await response.json();
         if (res.success) {
-            alert('Category Saved!');
+            if (window.showToast) window.showToast('Category Saved!', 'success');
             closeModal('category-modal');
             renderAdminCategories();
         } else {
-            alert(res.message);
+            if (window.showToast) window.showToast(res.message, 'error');
         }
-    } catch (err) { console.error(err); alert('Error saving category'); }
+    } catch (err) { console.error(err); if (window.showToast) window.showToast('Error saving category', 'error'); }
 };
 
 window.deleteCategory = async function (id) {
@@ -981,7 +975,7 @@ window.deleteCategory = async function (id) {
         try {
             await fetch(`${API_URL}/categories/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
             renderAdminCategories();
-        } catch (e) { alert('Error deleting'); }
+        } catch (e) { if (window.showToast) window.showToast('Error deleting', 'error'); }
     }
 };
 
@@ -1027,7 +1021,7 @@ window.renderAdminOrders = async function (filter = 'All') {
     let orders = await fetchOrders();
 
     if (filter !== 'All') {
-        orders = orders.filter(o => o.paymentStatus === filter);
+        orders = orders.filter(o => (o.status || '').toLowerCase() === filter.toLowerCase());
     }
 
     if (orders.length === 0) {
@@ -1039,10 +1033,15 @@ window.renderAdminOrders = async function (filter = 'All') {
         <tr>
             <td>#${o._id.substring(o._id.length - 6)}</td>
             <td>${new Date(o.createdAt).toLocaleDateString()}</td>
-            <td>${o.user ? o.user.name : 'Guest'}</td>
+            <td>${o.customerName || (o.user ? o.user.name : 'Guest')}</td>
             <td>£${o.totalAmount.toFixed(2)}</td>
             <td>
-                <span class="status-badge status-${o.paymentStatus}">${o.paymentStatus}</span>
+                <select class="form-control status-select" onchange="updateOrderStatus('${o._id}', this.value)" style="padding: 4px 8px; font-size: 0.8rem; height: auto; width: auto; border-radius: 6px; border-color: var(--admin-border);">
+                    <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Pending</option>
+                    <option value="confirmed" ${o.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+                    <option value="delivered" ${o.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                    <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                </select>
             </td>
             <td>
                 <button class="btn btn-outline btn-sm" onclick="viewOrderDetails('${o._id}')"><i class="fas fa-eye"></i></button>
@@ -1055,15 +1054,82 @@ window.filterOrders = function (status) {
     renderAdminOrders(status);
 };
 
+window.updateOrderStatus = async function (id, newStatus) {
+    try {
+        if (!window.api || !window.api.orders) {
+            console.error('API helper not found');
+            if (window.showToast) window.showToast('Initialization error: api.js missing', 'error');
+            return;
+        }
+
+        const response = await window.api.orders.updateStatus(id, { status: newStatus });
+        if (response.success) {
+            // Re-render orders to show changes
+            const currentFilter = document.querySelector('#tab-orders .header-actions select').value;
+            renderAdminOrders(currentFilter);
+        } else {
+            if (window.showToast) window.showToast(response.message || 'Error updating status', 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        if (window.showToast) window.showToast('Failed to update order status', 'error');
+    }
+};
+
 window.viewOrderDetails = async function (id) {
+    const modal = document.getElementById('order-details-modal');
+    const loading = document.getElementById('order-details-loading');
+    const content = document.getElementById('order-details-content');
+    const errEl = document.getElementById('order-details-error');
+    if (!modal || !loading || !content || !errEl) return;
+
+    loading.style.display = 'block';
+    content.style.display = 'none';
+    errEl.style.display = 'none';
+    modal.style.display = 'flex';
+
     try {
         const response = await fetch(`${API_URL}/orders/${id}`, { headers: getAuthHeaders() });
         const data = await response.json();
-        if (data.success) {
-            const o = data.data;
-            alert(`Order #${id}\nUser: ${o.user ? o.user.name : 'Unknown'}\nTotal: £${o.totalAmount}\nStatus: ${o.paymentStatus}`);
+        if (!data.success) {
+            errEl.textContent = data.message || 'Order not found';
+            errEl.style.display = 'block';
+            loading.style.display = 'none';
+            return;
         }
-    } catch (e) { console.error(e); }
+        const o = data.data;
+
+        document.getElementById('order-details-modal-title').textContent = 'Order #' + (o._id ? o._id.substring(o._id.length - 6) : id);
+        document.getElementById('order-detail-id').textContent = '#' + (o._id ? o._id.substring(o._id.length - 6) : id);
+        document.getElementById('order-detail-date').textContent = o.createdAt ? new Date(o.createdAt).toLocaleString() : '—';
+        document.getElementById('order-detail-customer').textContent = o.customerName || (o.user && o.user.name) || 'Guest';
+        document.getElementById('order-detail-email').textContent = o.customerEmail || '—';
+        document.getElementById('order-detail-phone').textContent = o.customerPhone || '—';
+        document.getElementById('order-detail-status').textContent = (o.status || 'pending').charAt(0).toUpperCase() + (o.status || '').slice(1);
+        document.getElementById('order-detail-payment').textContent = (o.paymentMethod || '—') + (o.paymentStatus ? ' · ' + o.paymentStatus : '');
+        const addr = o.shippingAddress;
+        document.getElementById('order-detail-shipping').textContent = addr && (addr.street || addr.city || addr.postcode) ? [addr.street, addr.city, addr.postcode, addr.country].filter(Boolean).join(', ') : '—';
+
+        const items = o.items || [];
+        const tbody = document.getElementById('order-details-items');
+        tbody.innerHTML = items.map(function (item) {
+            const product = item.product;
+            const name = product && (product.name || product.title) ? (product.name || product.title) : 'Product';
+            const qty = item.quantity || 0;
+            const price = item.price != null ? item.price : 0;
+            const subtotal = (qty * price).toFixed(2);
+            return '<tr style="border-bottom: 1px solid var(--admin-border);"><td style="padding: 10px 12px;">' + name + '</td><td style="padding: 10px 12px; text-align: right;">' + qty + '</td><td style="padding: 10px 12px; text-align: right;">£' + price.toFixed(2) + '</td><td style="padding: 10px 12px; text-align: right;">£' + subtotal + '</td></tr>';
+        }).join('');
+
+        document.getElementById('order-details-total').textContent = '£' + (o.totalAmount != null ? o.totalAmount.toFixed(2) : '0.00');
+        loading.style.display = 'none';
+        content.style.display = 'block';
+    } catch (e) {
+        console.error(e);
+        errEl.textContent = 'Failed to load order details.';
+        errEl.style.display = 'block';
+        loading.style.display = 'none';
+    }
 };
 
 // --- INVENTORY MANAGEMENT ---
@@ -1089,7 +1155,7 @@ window.renderAdminInventory = async function () {
                 <td>${stock} Units</td>
                 <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                 <td>
-                    <button class="btn btn-outline btn-sm" onclick="alert('Use Edit Product to update stock')"><i class="fas fa-plus"></i> Refill</button>
+                    <button class="btn btn-outline btn-sm" onclick="window.showToast && window.showToast('Use Edit Product to update stock', 'info')"><i class="fas fa-plus"></i> Refill</button>
                 </td>
             </tr>
         `;
@@ -1126,7 +1192,7 @@ window.renderAdminCustomers = async function () {
             <td>-</td> 
             <td><span class="status-badge ${c.role === 'admin' ? 'badge-success' : 'badge-info'}">${c.role}</span></td>
             <td>
-                <button class="btn btn-outline btn-sm" onclick="alert('View details not implemented')"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-outline btn-sm" onclick="window.showToast && window.showToast('View details not implemented', 'info')"><i class="fas fa-eye"></i></button>
             </td>
         </tr>
     `).join('');
@@ -1218,13 +1284,13 @@ window.openCouponModal = function () {
                 });
                 const res = await response.json();
                 if (res.success) {
-                    alert('Coupon Created!');
+                    if (window.showToast) window.showToast('Coupon Created!', 'success');
                     document.getElementById('coupon-modal').style.display = 'none';
                     renderAdminDiscounts();
                 } else {
-                    alert(res.message);
+                    if (window.showToast) window.showToast(res.message, 'error');
                 }
-            } catch (err) { console.error(err); alert('Error creating coupon'); }
+            } catch (err) { console.error(err); if (window.showToast) window.showToast('Error creating coupon', 'error'); }
         });
     }
     document.getElementById('coupon-modal').style.display = 'flex';
@@ -1235,7 +1301,7 @@ window.deleteCoupon = async function (id) {
         try {
             await fetch(`${API_URL}/coupons/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
             renderAdminDiscounts();
-        } catch (e) { alert('Error deleting coupon'); }
+        } catch (e) { if (window.showToast) window.showToast('Error deleting coupon', 'error'); }
     }
 };
 

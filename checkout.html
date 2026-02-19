@@ -17,12 +17,12 @@
     <header class="relative z-50 bg-white border-b border-slate-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16 md:h-24 gap-2 md:gap-8">
-                <a href="index.html"
+                <a href="store.html"
                     class="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors">
                     <i data-lucide="arrow-left" class="w-5 h-5"></i>
                     <span class="font-bold">Back to Shop</span>
                 </a>
-                <a href="index.html" class="flex items-center gap-1 md:gap-2 flex-shrink-0 group">
+                <a href="store.html" class="flex items-center gap-1 md:gap-2 flex-shrink-0 group">
                     <img src="images/rhyll-logo.png" alt="Rhyl Super Store" class="h-10 md:h-16 w-auto object-contain"
                         style="border-radius: 1000px; filter: grayscale(100%) sepia(100%) hue-rotate(190deg) saturate(500%) contrast(120%);">
                     <div class="flex flex-col">
@@ -43,21 +43,35 @@
 
     <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         <!-- Empty cart -->
-        <div x-show="cart.length === 0" x-cloak class="text-center py-16">
+        <div x-show="cart.length === 0 && !orderPlaced" x-cloak class="text-center py-16">
             <div
                 class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-400">
                 <i data-lucide="shopping-cart" class="w-12 h-12"></i>
             </div>
             <h2 class="text-2xl font-black text-slate-900 mb-2">Your cart is empty</h2>
             <p class="text-slate-600 mb-6">Add items from the store to checkout.</p>
-            <a href="index.html"
+            <a href="store.html"
+                class="inline-block bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold hover:bg-blue-700 transition-colors">
+                Continue Shopping
+            </a>
+        </div>
+
+        <!-- Success message -->
+        <div x-show="orderPlaced" x-cloak x-transition
+            class="bg-green-50 border border-green-200 rounded-3xl p-8 text-center max-w-2xl mx-auto shadow-sm">
+            <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white">
+                <i data-lucide="check" class="w-8 h-8"></i>
+            </div>
+            <h2 class="text-2xl font-black text-slate-900 mb-2">Order placed successfully</h2>
+            <p class="text-slate-600 mb-6">Thank you for your order. We'll deliver it soon.</p>
+            <a href="store.html"
                 class="inline-block bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold hover:bg-blue-700 transition-colors">
                 Continue Shopping
             </a>
         </div>
 
         <!-- Checkout flow: step 1 = review, step 2 = delivery -->
-        <template x-if="cart.length > 0">
+        <template x-if="cart.length > 0 && !orderPlaced">
             <div class="space-y-8">
                 <!-- Step indicator -->
                 <div class="flex items-center justify-center gap-4 text-sm font-bold">
@@ -167,25 +181,13 @@
                         </div>
                     </form>
                 </div>
-
-                <!-- Success message -->
-                <div x-show="orderPlaced" x-cloak x-transition
-                    class="bg-green-50 border border-green-200 rounded-3xl p-8 text-center">
-                    <div
-                        class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white">
-                        <i data-lucide="check" class="w-8 h-8"></i>
-                    </div>
-                    <h2 class="text-2xl font-black text-slate-900 mb-2">Order placed successfully</h2>
-                    <p class="text-slate-600 mb-6">Thank you for your order. We'll deliver it soon.</p>
-                    <a href="index.html"
-                        class="inline-block bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold hover:bg-blue-700 transition-colors">
-                        Continue Shopping
-                    </a>
-                </div>
             </div>
         </template>
+
     </main>
 
+    <script src="js/toast.js"></script>
+    <script src="js/api.js"></script>
     <script>
         function checkoutPage() {
             return {
@@ -195,9 +197,28 @@
                 placing: false,
                 orderPlaced: false,
 
-                init() {
+                async init() {
                     const saved = localStorage.getItem('cart');
                     this.cart = saved ? JSON.parse(saved) : [];
+
+                    // Simple Auth Check
+                    const token = window.getToken ? window.getToken() : localStorage.getItem('token');
+                    if (!token) {
+                        if (window.showToast) window.showToast('Please login to complete your order.', 'error');
+                        setTimeout(function () { window.location.href = 'login.html'; }, 1200);
+                        return;
+                    }
+
+                    // Pre-fill form from user data if available (Optional, removed to avoid confusion with Admin testing)
+                    /*
+                    const user = window.getCurrentUser ? window.getCurrentUser() : JSON.parse(localStorage.getItem('user') || '{}');
+                    if (user && user.name) {
+                        this.form.name = user.name;
+                        this.form.email = user.email;
+                    }
+                    */
+
+
                     setTimeout(() => { if (window.lucide) lucide.createIcons(); }, 100);
                 },
 
@@ -205,19 +226,48 @@
                     return this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
                 },
 
-                placeOrder() {
+                async placeOrder() {
                     this.placing = true;
-                    // Simulate order placement (cart cleared on success)
-                    setTimeout(() => {
+                    try {
+                        // Map cart to backend expected format
+                        const orderItems = this.cart.map(item => ({
+                            product: item._id,
+                            quantity: item.quantity,
+                            price: item.price
+                        }));
+
+                        const orderData = {
+                            items: orderItems,
+                            shippingAddress: this.form.address,
+                            paymentMethod: 'Cash on Delivery', // Default for now
+                            customerName: this.form.name,
+                            customerEmail: this.form.email,
+                            customerPhone: this.form.phone
+                        };
+
+
+                        const response = await window.api.orders.create(orderData);
+
+                        if (response.success) {
+                            this.orderPlaced = true;
+                            localStorage.setItem('cart', '[]');
+                            this.cart = [];
+                            if (window.showToast) window.showToast('Order placed successfully!', 'success');
+                            if (window.lucide) lucide.createIcons();
+                        } else {
+                            if (window.showToast) window.showToast(response.message || 'Error placing order', 'error');
+                        }
+                    } catch (err) {
+                        console.error('Order Error:', err);
+                        if (window.showToast) window.showToast(err.message || 'Server error occurred while placing order.', 'error');
+                    } finally {
                         this.placing = false;
-                        this.orderPlaced = true;
-                        localStorage.setItem('cart', '[]');
-                        if (window.lucide) lucide.createIcons();
-                    }, 800);
+                    }
                 }
             };
         }
     </script>
+
 </body>
 
 </html>

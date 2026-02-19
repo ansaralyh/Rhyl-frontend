@@ -343,7 +343,8 @@ document.addEventListener('alpine:init', () => {
             localStorage.removeItem('adminLoggedIn');
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = 'index.html';
+            if (typeof window.showToast === 'function') window.showToast('You have been logged out.', 'success');
+            setTimeout(function () { window.location.href = 'store.html'; }, 800);
         },
         showNotification(message) {
             const el = document.createElement('div');
@@ -396,12 +397,12 @@ document.addEventListener('alpine:init', () => {
                     localStorage.setItem('token', userData.token);
                     localStorage.setItem('user', JSON.stringify(userData));
                     localStorage.setItem('userLoggedIn', 'true');
-
+                    if (typeof window.showToast === 'function') window.showToast('Login successful!', 'success');
                     if (userData.role === 'admin') {
                         localStorage.setItem('adminLoggedIn', 'true');
-                        window.location.href = 'admin.html';
+                        setTimeout(function () { window.location.href = 'admin.html'; }, 800);
                     } else {
-                        window.location.href = 'index.html';
+                        setTimeout(function () { window.location.href = 'store.html'; }, 800);
                     }
                 } else {
                     this.error = data.message || 'Invalid credentials';
@@ -435,7 +436,7 @@ document.addEventListener('alpine:init', () => {
                 });
                 const contentType = response.headers.get('content-type') || '';
                 if (!contentType.includes('application/json')) {
-                    alert('Server returned an unexpected response. Please try again.');
+                    if (typeof window.showToast === 'function') window.showToast('Server returned an unexpected response. Please try again.', 'error');
                     this.loading = false;
                     return;
                 }
@@ -443,20 +444,20 @@ document.addEventListener('alpine:init', () => {
                 try {
                     data = await response.json();
                 } catch (parseErr) {
-                    alert('Server error. Please try again.');
+                    if (typeof window.showToast === 'function') window.showToast('Server error. Please try again.', 'error');
                     this.loading = false;
                     return;
                 }
 
                 if (data.success) {
-                    alert('Registration successful! Please login.');
-                    window.location.href = 'login.html';
+                    if (typeof window.showToast === 'function') window.showToast('Registration successful! Please login.', 'success');
+                    setTimeout(function () { window.location.href = 'login.html'; }, 1200);
                 } else {
-                    alert(data.message || 'Registration failed');
+                    if (typeof window.showToast === 'function') window.showToast(data.message || 'Registration failed', 'error');
                 }
             } catch (err) {
                 console.error(err);
-                alert('Server error');
+                if (typeof window.showToast === 'function') window.showToast('Server error', 'error');
             } finally {
                 this.loading = false;
             }

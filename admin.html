@@ -1239,9 +1239,9 @@
                                 <option value="All">All Statuses</option>
                                 <option value="Pending">Pending</option>
                                 <option value="Confirmed">Confirmed</option>
-                                <option value="Shipped">Shipped</option>
                                 <option value="Delivered">Delivered</option>
                                 <option value="Cancelled">Cancelled</option>
+
                             </select>
                         </div>
                     </div>
@@ -1577,11 +1577,62 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Order Details Popup (view order + product details) -->
+    <div id="order-details-modal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2 id="order-details-modal-title">Order Details</h2>
+                <span class="close" onclick="closeModal('order-details-modal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="order-details-loading" class="text-center" style="padding: 24px;">Loading...</div>
+                <div id="order-details-content" style="display: none;">
+                    <div style="display: grid; gap: 16px; margin-bottom: 20px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.9rem;">
+                            <div><strong>Order ID</strong><br><span id="order-detail-id" class="text-light"></span></div>
+                            <div><strong>Date</strong><br><span id="order-detail-date" class="text-light"></span></div>
+                            <div><strong>Customer</strong><br><span id="order-detail-customer" class="text-light"></span></div>
+                            <div><strong>Email</strong><br><span id="order-detail-email" class="text-light"></span></div>
+                            <div><strong>Phone</strong><br><span id="order-detail-phone" class="text-light"></span></div>
+                            <div><strong>Status</strong><br><span id="order-detail-status" class="text-light"></span></div>
+                            <div><strong>Payment</strong><br><span id="order-detail-payment" class="text-light"></span></div>
+                            <div><strong>Shipping</strong><br><span id="order-detail-shipping" class="text-light"></span></div>
+                        </div>
+                    </div>
+                    <p class="text-light" style="margin-bottom: 8px; font-weight: 600;">Product view details</p>
+                    <div style="overflow-x: auto; border: 1px solid var(--admin-border); border-radius: 10px;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: var(--admin-bg); border-bottom: 1px solid var(--admin-border);">
+                                    <th style="padding: 10px 12px; text-align: left;">Product</th>
+                                    <th style="padding: 10px 12px; text-align: right;">Qty</th>
+                                    <th style="padding: 10px 12px; text-align: right;">Unit price</th>
+                                    <th style="padding: 10px 12px; text-align: right;">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="order-details-items">
+                                <!-- JS filled -->
+                            </tbody>
+                            <tfoot>
+                                <tr style="border-top: 2px solid var(--admin-border); font-weight: 700;">
+                                    <td colspan="3" style="padding: 12px; text-align: right;">Total</td>
+                                    <td id="order-details-total" style="padding: 12px; text-align: right;"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div id="order-details-error" class="text-center text-danger" style="display: none; padding: 24px;"></div>
+                <div class="modal-footer" style="margin-top: 20px;">
+                    <button type="button" class="btn btn-primary" onclick="closeModal('order-details-modal')">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <script src="js/toast.js"></script>
+    <script src="js/api.js"></script>
     <script src="js/admin.js"></script>
 </body>
-
-</html>
 
 </html>
