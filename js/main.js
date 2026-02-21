@@ -164,40 +164,65 @@ document.addEventListener('alpine:init', () => {
                 if (result.success) {
                     const allProducts = result.data;
 
+                    // Get all category names for a product (lowercase)
                     const getCatNames = (p) => {
                         if (!p.category) return [];
                         if (Array.isArray(p.category)) {
-                            return p.category.map(c => c.name || c);
+                            return p.category.map(c => (c.name || c || '').toString().toLowerCase().trim());
                         }
-                        return [p.category.name || p.category];
+                        return [(p.category.name || p.category || '').toString().toLowerCase().trim()];
                     };
-                    const hasCategory = (p, catName) => getCatNames(p).includes(catName);
 
-                    this.freshProduce = allProducts.filter(p => hasCategory(p, 'Fresh Produce'));
-                    this.groceryStaples = allProducts.filter(p => hasCategory(p, 'Grocery & Staples'));
-                    this.spicesMasala = allProducts.filter(p => hasCategory(p, 'Spices & Masala'));
-                    this.dairyProducts = allProducts.filter(p => hasCategory(p, 'Dairy Products'));
-                    this.meatFrozen = allProducts.filter(p => hasCategory(p, 'Meat & Frozen'));
-                    this.packagedCanned = allProducts.filter(p => hasCategory(p, 'Packaged Food'));
-                    this.snacksBakery = allProducts.filter(p => hasCategory(p, 'Snacks & Bakery'));
-                    this.beverages = allProducts.filter(p => hasCategory(p, 'Beverages'));
-                    this.householdCleaning = allProducts.filter(p => hasCategory(p, 'Household'));
-                    this.personalCare = allProducts.filter(p => hasCategory(p, 'Personal Care'));
-
-                    this.asianProducts = allProducts.filter(p => {
+                    // Check if product has a category containing ANY of the keywords
+                    const matchesAny = (p, keywords) => {
                         const names = getCatNames(p);
-                        return ['Pakistani Product', 'Indian Product', 'Asian Products'].some(name => names.includes(name));
-                    });
-                    this.africanProducts = allProducts.filter(p => hasCategory(p, 'African Product'));
-                    this.babyProducts = allProducts.filter(p => hasCategory(p, 'Baby Care'));
-                    this.cateringProducts = allProducts.filter(p => hasCategory(p, 'Catering'));
-                    this.thaiPhilippinesProducts = allProducts.filter(p => hasCategory(p, 'Thai and philippines Products'));
+                        return names.some(catName => 
+                            keywords.some(kw => catName.includes(kw.toLowerCase()))
+                        );
+                    };
+
+                    // Category filters using partial matching (case-insensitive)
+                    this.freshProduce = allProducts.filter(p => matchesAny(p, ['fresh', 'produce', 'vegetable', 'fruit']));
+                    this.groceryStaples = allProducts.filter(p => matchesAny(p, ['grocery', 'staple', 'rice', 'flour', 'oil', 'sugar', 'salt']));
+                    this.spicesMasala = allProducts.filter(p => matchesAny(p, ['spice', 'masala', 'seasoning', 'herb']));
+                    this.dairyProducts = allProducts.filter(p => matchesAny(p, ['dairy', 'milk', 'cheese', 'butter', 'yogurt', 'cream']));
+                    this.meatFrozen = allProducts.filter(p => matchesAny(p, ['meat', 'frozen', 'chicken', 'beef', 'lamb', 'fish', 'seafood']));
+                    this.packagedCanned = allProducts.filter(p => matchesAny(p, ['packaged', 'canned', 'tinned', 'preserved']));
+                    this.snacksBakery = allProducts.filter(p => matchesAny(p, ['snack', 'bakery', 'biscuit', 'chips', 'cookies', 'bread', 'cake']));
+                    this.beverages = allProducts.filter(p => matchesAny(p, ['beverage', 'drink', 'juice', 'soda', 'water', 'tea', 'coffee']));
+                    this.householdCleaning = allProducts.filter(p => matchesAny(p, ['household', 'cleaning', 'detergent', 'soap', 'cleaner']));
+                    this.personalCare = allProducts.filter(p => matchesAny(p, ['personal', 'care', 'hygiene', 'cosmetic', 'beauty', 'shampoo', 'toothpaste']));
+
+                    this.asianProducts = allProducts.filter(p => matchesAny(p, ['asian', 'pakistani', 'indian', 'chinese', 'japanese', 'korean', 'bangladeshi']));
+                    this.africanProducts = allProducts.filter(p => matchesAny(p, ['african', 'nigeria', 'ghana', 'caribbean']));
+                    this.babyProducts = allProducts.filter(p => matchesAny(p, ['baby', 'infant', 'toddler', 'nappy', 'diaper']));
+                    this.cateringProducts = allProducts.filter(p => matchesAny(p, ['catering', 'bulk', 'wholesale', 'restaurant']));
+                    this.thaiPhilippinesProducts = allProducts.filter(p => matchesAny(p, ['thai', 'philippines', 'filipino', 'vietnam', 'southeast']));
 
                     // Debug logging
+                    console.log('=== Product Category Debug ===');
                     console.log('Total products loaded:', allProducts.length);
+                    console.log('Fresh Produce:', this.freshProduce.length);
+                    console.log('Catering Products:', this.cateringProducts.length);
                     console.log('Asian Products:', this.asianProducts.length);
                     console.log('African Products:', this.africanProducts.length);
-                    console.log('Catering Products:', this.cateringProducts.length);
+                    console.log('Grocery & Staples:', this.groceryStaples.length);
+                    console.log('Spices & Masala:', this.spicesMasala.length);
+                    console.log('Dairy Products:', this.dairyProducts.length);
+                    console.log('Meat & Frozen:', this.meatFrozen.length);
+                    console.log('Packaged & Canned:', this.packagedCanned.length);
+                    console.log('Snacks & Bakery:', this.snacksBakery.length);
+                    console.log('Beverages:', this.beverages.length);
+                    console.log('Household & Cleaning:', this.householdCleaning.length);
+                    console.log('Personal Care:', this.personalCare.length);
+                    console.log('Thai & Philippines:', this.thaiPhilippinesProducts.length);
+                    console.log('Baby Products:', this.babyProducts.length);
+                    if (allProducts.length > 0) {
+                        console.log('Sample product categories:', allProducts.slice(0, 5).map(p => ({
+                            name: p.name,
+                            categories: Array.isArray(p.category) ? p.category.map(c => c.name || c) : [p.category?.name || p.category]
+                        })));
+                    }
 
                     // Slider & Top Products Logic
                     this.sliderProducts = allProducts.filter(p => p.featured || p.rating >= 4.5).slice(0, 5);

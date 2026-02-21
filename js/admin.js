@@ -232,12 +232,23 @@ function renderRecentOrders(orders) {
         return;
     }
 
+    function orderStatusClass(s) {
+        const status = (s || 'pending').toLowerCase();
+        if (status === 'confirmed' || status === 'delivered') return 'badge-success';
+        if (status === 'cancelled') return 'badge-danger';
+        return 'badge-warning';
+    }
+    function orderStatusLabel(s) {
+        const status = (s || 'pending').toLowerCase();
+        return status.charAt(0).toUpperCase() + status.slice(1);
+    }
+
     list.innerHTML = orders.map(o => `
         <tr>
             <td>#${o._id.substring(o._id.length - 6)}</td>
-            <td>${o.user ? o.user.name : 'Guest'}</td>
+            <td>${o.customerName || (o.user ? o.user.name : 'Guest')}</td>
             <td>£${o.totalAmount.toFixed(2)}</td>
-            <td><span class="status-badge ${o.paymentStatus === 'paid' ? 'status-Confirmed' : 'status-Pending'}">${o.paymentStatus}</span></td>
+            <td><span class="status-badge ${orderStatusClass(o.status)}">${orderStatusLabel(o.status)}</span></td>
         </tr>
     `).join('');
 }
@@ -316,7 +327,7 @@ async function fetchCategoriesForFilter() {
 
 window.renderAdminProducts = async function () {
     const list = document.getElementById('admin-product-list');
-    list.innerHTML = '<tr><td colspan="7" class="text-center">Loading...</td></tr>';
+    list.innerHTML = '<tr><td colspan="8" class="text-center">Loading...</td></tr>';
 
     // Ensure filters are populated
     fetchCategoriesForFilter();
@@ -324,16 +335,23 @@ window.renderAdminProducts = async function () {
     const products = await fetchProducts();
 
     if (products.length === 0) {
-        list.innerHTML = '<tr><td colspan="7" class="text-center">No products found</td></tr>';
+        list.innerHTML = '<tr><td colspan="8" class="text-center">No products found</td></tr>';
         return;
     }
 
-    list.innerHTML = products.map(p => `
+    list.innerHTML = products.map(p => {
+        // Use stored previousPrice/currentPrice; only fall back to price for legacy products (undefined)
+        const hasPrevious = p.previousPrice !== undefined && p.previousPrice !== null;
+        const hasCurrent = p.currentPrice !== undefined && p.currentPrice !== null;
+        const previousPrice = hasPrevious ? Math.max(0, Number(p.previousPrice)) : (Math.max(0, Number(p.price) || 0));
+        const currentPrice = hasCurrent ? Math.max(0, Number(p.currentPrice)) : (p.price != null ? Math.max(0, Number(p.price) * (1 - (Number(p.discount) || 0) / 100)) : previousPrice) || previousPrice;
+        return `
         <tr>
             <td><img src="${p.image || 'https://via.placeholder.com/50'}" class="table-img" style="width:50px; height:50px; object-fit:cover; border-radius:8px;"></td>
             <td><strong>${p.name}</strong></td>
             <td>${Array.isArray(p.category) ? p.category.map(c => c.name).join(', ') : (p.category ? p.category.name : 'Uncategorized')}</td>
-            <td>£${p.price.toFixed(2)}</td>
+            <td>£${previousPrice.toFixed(2)}</td>
+            <td>£${currentPrice.toFixed(2)}</td>
             <td>${p.stock || 0}</td>
             <td><span class="status-badge ${p.stock > 0 ? 'badge-success' : 'badge-danger'}">${p.stock > 0 ? 'In Stock' : 'Out of Stock'}</span></td>
             <td>
@@ -341,7 +359,7 @@ window.renderAdminProducts = async function () {
                 <button class="btn btn-outline btn-sm" onclick="deleteProduct('${p._id}')" style="color:var(--danger);"><i class="fas fa-trash"></i></button>
             </td>
         </tr>
-    `).join('');
+    `}).join('');
 };
 
 // --- CATEGORY SELECTION UI LOGIC ---
@@ -724,7 +742,9 @@ if (productForm) {
 
         const productData = {
             name: document.getElementById('p-name').value,
-            price: originalPrice,
+            price: currentPrice,
+            previousPrice: originalPrice,
+            currentPrice: currentPrice,
             discount: discount,
             category: selectedCategories,
             image: imageUrls[0], // First image is main image
@@ -800,9 +820,10 @@ window.editProduct = async function (id) {
             form.dataset.id = p._id;
 
             document.getElementById('p-name').value = p.name;
-            document.getElementById('p-price').value = p.price;
-            const currentPrice = p.price * (1 - (p.discount || 0) / 100);
-            document.getElementById('p-current-price').value = currentPrice.toFixed(2);
+            const prevPrice = p.previousPrice || p.price || 0;
+            const currPrice = p.currentPrice || (p.price * (1 - (p.discount || 0) / 100)) || 0;
+            document.getElementById('p-price').value = prevPrice.toFixed(2);
+            document.getElementById('p-current-price').value = currPrice.toFixed(2);
             document.getElementById('p-stock').value = p.stock || 0;
             document.getElementById('p-description').value = p.description || '';
             document.getElementById('p-image-url').value = '';
@@ -1064,7 +1085,7 @@ window.updateOrderStatus = async function (id, newStatus) {
 
         const response = await window.api.orders.updateStatus(id, { status: newStatus });
         if (response.success) {
-            // Re-render orders to show changes
+            if (window.showToast) window.showToast(response.message || 'Order updated successfully.', 'success');
             const currentFilter = document.querySelector('#tab-orders .header-actions select').value;
             renderAdminOrders(currentFilter);
         } else {
