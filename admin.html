@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <link rel="apple-touch-icon" href="images/favicon.png">
     <title>Admin Panel - Super Store</title>
     <link rel="stylesheet" href="css/style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -89,6 +91,7 @@
             border: none;
             padding: 0;
             box-shadow: none;
+            mix-blend-mode: screen;
         }
 
         .sidebar-logo {
@@ -558,6 +561,26 @@
             background: var(--admin-text-light);
         }
 
+        .bulk-drop-zone {
+            border: 2px dashed var(--admin-border);
+            border-radius: 12px;
+            padding: 32px 24px;
+            text-align: center;
+            cursor: pointer;
+            background: var(--admin-bg);
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .bulk-drop-zone:hover,
+        .bulk-drop-zone.drag-over {
+            border-color: var(--admin-primary);
+            background: rgba(13, 148, 136, 0.06);
+        }
+
+        .bulk-drop-zone span {
+            color: var(--admin-text-light);
+            font-size: 0.95rem;
+        }
 
         .modal-header {
             padding: 24px 30px;
@@ -1003,9 +1026,7 @@
                 <i class="fas fa-bars"></i>
             </button>
             <div class="sidebar-logo">
-                <img src="images/rhyll-logo.png" alt="Rhyl"
-                    style="height: 24px; border-radius: 1000px; filter: grayscale(100%) sepia(100%) hue-rotate(190deg) saturate(500%) contrast(120%);">
-                <span style="color: var(--admin-text-main); font-size: 1rem;">Admin</span>
+                <img src="images/rhyll-logo.png" alt="Rhyl" style="height: 36px; width: auto; object-fit: contain;">
             </div>
             <div class="admin-profile" style="padding: 4px; box-shadow: none;">
                 <img src="https://i.pravatar.cc/150?u=admin" alt="Admin" style="width: 32px; height: 32px;">
@@ -1014,10 +1035,10 @@
 
         <aside class="sidebar" id="admin-sidebar">
             <div class="sidebar-header" style="justify-content: center;">
-                <a href="index.html" class="sidebar-logo"
+                <a href="store.html" class="sidebar-logo"
                     style="justify-content: center; text-decoration: none; background: transparent;">
-                    <img src="images/rhyll-logo.png" alt="Super Store" class="logo-img"
-                        style="height: 50px; width: auto; background: transparent; border-radius: 1000px; filter: grayscale(100%) sepia(100%) hue-rotate(190deg) saturate(500%) contrast(120%);">
+                    <img src="images/rhyll-logo.png" alt="Rhyl" class="logo-img"
+                        style="height: 64px; width: auto; background: transparent; object-fit: contain; mix-blend-mode: screen;">
                 </a>
             </div>
 
@@ -1171,8 +1192,12 @@
                 <div class="card">
                     <div class="card-header">
                         <h3>Product Management</h3>
-                        <button class="btn btn-primary btn-sm" onclick="openAddProductModal()"><i
-                                class="fas fa-plus"></i> Add Product</button>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-primary btn-sm" onclick="openAddProductModal()"><i
+                                    class="fas fa-plus"></i> Add Product</button>
+                            <button class="btn btn-outline btn-sm" onclick="openBulkUploadModal()"><i
+                                    class="fas fa-file-csv"></i> Bulk Upload</button>
+                        </div>
                     </div>
                     <div class="table-tools">
                         <div class="search-box">
@@ -1192,6 +1217,7 @@
                                 <th>Name</th>
                                 <th>Category</th>
                                 <th>Previous Price</th>
+                                <th>Current Price</th>
                                 <th>Stock</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -1239,9 +1265,9 @@
                                 <option value="All">All Statuses</option>
                                 <option value="Pending">Pending</option>
                                 <option value="Confirmed">Confirmed</option>
-                                <option value="Shipped">Shipped</option>
                                 <option value="Delivered">Delivered</option>
                                 <option value="Cancelled">Cancelled</option>
+
                             </select>
                         </div>
                     </div>
@@ -1516,6 +1542,71 @@
         </div>
     </div>
 
+    <!-- Bulk Upload Modal -->
+    <div id="bulk-upload-modal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2>Bulk Product Upload</h2>
+                <span class="close" onclick="closeModal('bulk-upload-modal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p class="text-light" style="margin-bottom: 16px;">Upload a CSV file with product data. All columns are
+                    optional; only a product title (or first column) is required. <a href="#"
+                        id="bulk-download-template" style="color: var(--admin-primary); font-weight: 600;">Download CSV
+                        template</a></p>
+                <div id="bulk-drop-zone" class="bulk-drop-zone"
+                    onclick="document.getElementById('bulk-file-input').click()">
+                    <input type="file" id="bulk-file-input" accept=".csv" style="display: none;">
+                    <i class="fas fa-cloud-upload-alt"
+                        style="font-size: 2rem; color: var(--admin-primary); margin-bottom: 8px;"></i>
+                    <span>Drag & drop your CSV here or click to browse</span>
+                </div>
+                <div id="bulk-csv-errors" class="text-danger"
+                    style="display: none; margin-top: 12px; font-size: 0.9rem;"></div>
+                <div id="bulk-preview-section" style="display: none; margin-top: 20px;">
+                    <p class="text-light" style="margin-bottom: 8px; font-weight: 600;">Preview (<span
+                            id="bulk-preview-count">0</span> products)</p>
+                    <div
+                        style="overflow-x: auto; max-height: 320px; overflow-y: auto; border: 1px solid var(--admin-border); border-radius: 10px;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                            <thead style="position: sticky; top: 0; background: var(--admin-bg); z-index: 1;">
+                                <tr style="border-bottom: 2px solid var(--admin-border);">
+                                    <th style="padding: 8px 10px; text-align: left;">#</th>
+                                    <th style="padding: 8px 10px; text-align: left;">Product Title</th>
+                                    <th style="padding: 8px 10px; text-align: left;">Category</th>
+                                    <th style="padding: 8px 10px; text-align: right;">Previous Price</th>
+                                    <th style="padding: 8px 10px; text-align: right;">Current Price</th>
+                                    <th style="padding: 8px 10px; text-align: center;">Stock</th>
+                                    <th style="padding: 8px 10px; text-align: center;">Featured</th>
+                                    <th style="padding: 8px 10px; text-align: center;">Images</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bulk-preview-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div id="bulk-progress-wrap" style="display: none; margin-top: 16px;">
+                        <div
+                            style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9rem;">
+                            <span>Uploading...</span>
+                            <span id="bulk-progress-pct">0%</span>
+                        </div>
+                        <div style="height: 8px; background: var(--admin-bg); border-radius: 4px; overflow: hidden;">
+                            <div id="bulk-progress-bar"
+                                style="height: 100%; width: 0%; background: var(--admin-primary); transition: width 0.2s;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="margin-top: 20px; padding-top: 16px;">
+                        <button type="button" class="btn btn-outline"
+                            onclick="closeModal('bulk-upload-modal')">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="bulk-confirm-upload"
+                            onclick="confirmBulkUpload()"><i class="fas fa-upload"></i> Upload Products</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Category Modal -->
     <div id="category-modal" class="modal">
         <div class="modal-content" style="max-width: 500px;">
@@ -1577,11 +1668,73 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Order Details Popup (view order + product details) -->
+    <div id="order-details-modal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2 id="order-details-modal-title">Order Details</h2>
+                <span class="close" onclick="closeModal('order-details-modal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="order-details-loading" class="text-center" style="padding: 24px;">Loading...</div>
+                <div id="order-details-content" style="display: none;">
+                    <div style="display: grid; gap: 16px; margin-bottom: 20px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.9rem;">
+                            <div><strong>Order ID</strong><br><span id="order-detail-id" class="text-light"></span>
+                            </div>
+                            <div><strong>Date</strong><br><span id="order-detail-date" class="text-light"></span></div>
+                            <div><strong>Customer</strong><br><span id="order-detail-customer"
+                                    class="text-light"></span></div>
+                            <div><strong>Email</strong><br><span id="order-detail-email" class="text-light"></span>
+                            </div>
+                            <div><strong>Phone</strong><br><span id="order-detail-phone" class="text-light"></span>
+                            </div>
+                            <div><strong>Status</strong><br><span id="order-detail-status" class="text-light"></span>
+                            </div>
+                            <div><strong>Payment</strong><br><span id="order-detail-payment" class="text-light"></span>
+                            </div>
+                            <div><strong>Shipping</strong><br><span id="order-detail-shipping"
+                                    class="text-light"></span></div>
+                        </div>
+                    </div>
+                    <p class="text-light" style="margin-bottom: 8px; font-weight: 600;">Product view details</p>
+                    <div style="overflow-x: auto; border: 1px solid var(--admin-border); border-radius: 10px;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: var(--admin-bg); border-bottom: 1px solid var(--admin-border);">
+                                    <th style="padding: 10px 12px; text-align: left;">Product</th>
+                                    <th style="padding: 10px 12px; text-align: right;">Qty</th>
+                                    <th style="padding: 10px 12px; text-align: right;">Unit price</th>
+                                    <th style="padding: 10px 12px; text-align: right;">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="order-details-items">
+                                <!-- JS filled -->
+                            </tbody>
+                            <tfoot>
+                                <tr style="border-top: 2px solid var(--admin-border); font-weight: 700;">
+                                    <td colspan="3" style="padding: 12px; text-align: right;">Total</td>
+                                    <td id="order-details-total" style="padding: 12px; text-align: right;"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div id="order-details-error" class="text-center text-danger" style="display: none; padding: 24px;">
+                </div>
+                <div class="modal-footer" style="margin-top: 20px;">
+                    <button type="button" class="btn btn-primary"
+                        onclick="closeModal('order-details-modal')">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="js/toast.js"></script>
+    <script src="js/api.js"></script>
     <script src="js/admin.js"></script>
+    <script src="js/bulk-upload.js"></script>
 </body>
-
-</html>
 
 </html>
