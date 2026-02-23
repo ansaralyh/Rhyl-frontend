@@ -104,6 +104,12 @@ document.addEventListener('alpine:init', () => {
         devPopupOpen: false,
         countdown: { hours: 10, minutes: 0 },
 
+        formatPrice(price) {
+            if (price === undefined || price === null) return '0';
+            const num = Number(price);
+            return parseFloat(num.toFixed(2)).toString();
+        },
+
         async init() {
             this.isAdminLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
             this.isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
@@ -139,6 +145,15 @@ document.addEventListener('alpine:init', () => {
             this.startPackagedSlider();
             this.startBeverageSlider();
 
+            // ✅ Listen for sync messages from other tabs
+            const syncChannel = new BroadcastChannel('rhyl-sync');
+            syncChannel.onmessage = (event) => {
+                if (event.data.type === 'product-updated') {
+                    console.log('Syncing products due to update in another tab...');
+                    this.fetchProducts();
+                }
+            };
+
             // Initialize icons
             setTimeout(() => {
                 if (window.lucide) lucide.createIcons();
@@ -147,7 +162,8 @@ document.addEventListener('alpine:init', () => {
 
         async fetchProducts() {
             try {
-                const response = await fetch(`${API_URL}/products?limit=200`);
+                // Add cache buster to ensure immediate updates are fetched
+                const response = await fetch(`${API_URL}/products?limit=200&_t=${Date.now()}`);
                 const contentType = response.headers.get('content-type') || '';
                 if (!response.ok || !contentType.includes('application/json')) {
                     console.warn('Products API returned non-JSON or error:', response.status, response.statusText);
@@ -176,7 +192,7 @@ document.addEventListener('alpine:init', () => {
                     // Check if product has a category containing ANY of the keywords
                     const matchesAny = (p, keywords) => {
                         const names = getCatNames(p);
-                        return names.some(catName => 
+                        return names.some(catName =>
                             keywords.some(kw => catName.includes(kw.toLowerCase()))
                         );
                     };
