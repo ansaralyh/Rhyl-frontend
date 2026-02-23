@@ -144,17 +144,16 @@
 
                 <!-- Price: always show total (full) price and current price -->
                 <div class="space-y-1">
-                    <div class="flex items-baseline gap-2 flex-wrap">
+                    <div x-show="(product.previousPrice || 0) > 0" class="flex items-baseline gap-2 flex-wrap">
                         <span class="text-slate-500 font-bold text-sm uppercase tracking-wider">Total price</span>
-                        <span class="text-2xl font-black text-red-600"
-                            :class="(product.discount || 0) > 0 ? 'line-through' : ''"
-                            x-text="'£' + product.price.toFixed(2)"></span>
+                        <span class="text-2xl font-black text-red-600 line-through"
+                            x-text="'£' + formatPrice(product.previousPrice)"></span>
                         <span class="text-slate-400 text-sm">GBP</span>
                     </div>
                     <div class="flex items-baseline gap-2 flex-wrap">
                         <span class="text-slate-500 font-bold text-sm uppercase tracking-wider">Current price</span>
                         <span class="text-5xl lg:text-6xl font-black text-blue-600"
-                            x-text="'£' + (product.price * (1 - (product.discount || 0) / 100)).toFixed(2)"></span>
+                            x-text="'£' + formatPrice(product.currentPrice || product.price || 0)"></span>
                         <span class="text-slate-400 font-medium">GBP</span>
                     </div>
                 </div>
@@ -257,6 +256,12 @@
                 cartCount: 0,
                 deliveryPopupOpen: false,
 
+                formatPrice(price) {
+                    if (price === undefined || price === null) return '0';
+                    const num = Number(price);
+                    return parseFloat(num.toFixed(2)).toString();
+                },
+
                 async init() {
                     // Load cart/wishlist from local storage
                     const savedCart = localStorage.getItem('cart');
@@ -278,6 +283,15 @@
 
                     await this.fetchProduct(productId);
 
+                    // ✅ Listen for sync messages from other tabs
+                    const syncChannel = new BroadcastChannel('rhyl-sync');
+                    syncChannel.onmessage = (event) => {
+                        if (event.data.type === 'product-updated') {
+                            console.log('Syncing product detail due to update in another tab...');
+                            this.fetchProduct(productId);
+                        }
+                    };
+
                     // Initialize icons
                     setTimeout(() => {
                         if (window.lucide) lucide.createIcons();
@@ -286,7 +300,8 @@
 
                 async fetchProduct(id) {
                     try {
-                        const response = await fetch(`${API_URL}/products/${id}`);
+                        // Add cache buster to ensure immediate updates are fetched
+                        const response = await fetch(`${API_URL}/products/${id}?_t=${Date.now()}`);
                         const contentType = response.headers.get('content-type') || '';
                         if (!contentType.includes('application/json')) {
                             this.error = 'Product unavailable. Please try again later.';

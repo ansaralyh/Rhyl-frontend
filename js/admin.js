@@ -9,6 +9,12 @@ function getAuthHeaders() {
     };
 }
 
+function formatPrice(price) {
+    if (price === undefined || price === null) return '0';
+    const num = Number(price);
+    return parseFloat(num.toFixed(2)).toString();
+}
+
 async function fetchDashboardStats() {
     try {
         const response = await fetch(`${API_URL}/admin/dashboard`, {
@@ -136,10 +142,13 @@ async function initDashboard() {
         renderRecentOrders(stats.recentOrders);
         renderLowStock(stats.lowStockProducts);
     }
-    renderSalesChart();
+
+    // Fetch analytics for the chart (last 7 days)
+    const analytics = await fetchAnalytics('7');
+    renderSalesChart(analytics ? analytics.salesByDay : null);
 }
 
-function renderSalesChart() {
+function renderSalesChart(salesData) {
     const ctx = document.getElementById('salesChart');
     if (!ctx) return;
 
@@ -153,13 +162,22 @@ function renderSalesChart() {
     gradient.addColorStop(0, 'rgba(13, 148, 136, 0.2)');
     gradient.addColorStop(1, 'rgba(13, 148, 136, 0)');
 
+    // Map labels and values from salesData, or use fallback if empty
+    const labels = (salesData && salesData.length > 0) ? salesData.map(d => {
+        // format YYYY-MM-DD to cleaner label if possible
+        const parts = d._id.split('-');
+        return parts.length === 3 ? `${parts[2]}/${parts[1]}` : d._id;
+    }) : ['No Data'];
+
+    const values = (salesData && salesData.length > 0) ? salesData.map(d => d.totalSales) : [0];
+
     window.dashboardSalesChart = new Chart(context, {
         type: 'line',
         data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+            labels: labels,
             datasets: [{
-                label: 'Monthly Sales',
-                data: [650, 900, 750, 1200, 1100, 1450, 1300], // Mock Data
+                label: 'Daily Sales',
+                data: values,
                 borderColor: '#0d9488',
                 backgroundColor: gradient,
                 borderWidth: 2,
@@ -185,7 +203,8 @@ function renderSalesChart() {
                     bodyFont: { size: 14 },
                     callbacks: {
                         label: function (context) {
-                            return '£' + context.parsed.y;
+                            const val = context.parsed.y;
+                            return '£' + formatPrice(val);
                         }
                     }
                 }
@@ -200,7 +219,7 @@ function renderSalesChart() {
                     ticks: {
                         color: '#64748b',
                         callback: function (value) {
-                            return '£' + value;
+                            return '£' + formatPrice(value);
                         }
                     }
                 },
@@ -222,7 +241,7 @@ function updateStats(stats) {
     document.getElementById('stat-products').innerText = stats.totalProducts;
     document.getElementById('stat-orders').innerText = stats.totalOrders;
     document.getElementById('stat-customers').innerText = stats.totalCustomers;
-    document.getElementById('stat-sales').innerText = `£${stats.totalSales.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+    document.getElementById('stat-sales').innerText = `£${formatPrice(stats.totalSales)}`;
 }
 
 function renderRecentOrders(orders) {
@@ -247,7 +266,7 @@ function renderRecentOrders(orders) {
         <tr>
             <td>#${o._id.substring(o._id.length - 6)}</td>
             <td>${o.customerName || (o.user ? o.user.name : 'Guest')}</td>
-            <td>£${o.totalAmount.toFixed(2)}</td>
+            <td>£${formatPrice(o.totalAmount)}</td>
             <td><span class="status-badge ${orderStatusClass(o.status)}">${orderStatusLabel(o.status)}</span></td>
         </tr>
     `).join('');
@@ -340,18 +359,15 @@ window.renderAdminProducts = async function () {
     }
 
     list.innerHTML = products.map(p => {
-        // Use stored previousPrice/currentPrice; only fall back to price for legacy products (undefined)
-        const hasPrevious = p.previousPrice !== undefined && p.previousPrice !== null;
-        const hasCurrent = p.currentPrice !== undefined && p.currentPrice !== null;
-        const previousPrice = hasPrevious ? Math.max(0, Number(p.previousPrice)) : (Math.max(0, Number(p.price) || 0));
-        const currentPrice = hasCurrent ? Math.max(0, Number(p.currentPrice)) : (p.price != null ? Math.max(0, Number(p.price) * (1 - (Number(p.discount) || 0) / 100)) : previousPrice) || previousPrice;
+        const previousPrice = Number(p.previousPrice || 0);
+        const currentPrice = Number(p.currentPrice || p.price || 0);
         return `
         <tr>
             <td><img src="${p.image || 'https://via.placeholder.com/50'}" class="table-img" style="width:50px; height:50px; object-fit:cover; border-radius:8px;"></td>
             <td><strong>${p.name}</strong></td>
             <td>${Array.isArray(p.category) ? p.category.map(c => c.name).join(', ') : (p.category ? p.category.name : 'Uncategorized')}</td>
-            <td>£${previousPrice.toFixed(2)}</td>
-            <td>£${currentPrice.toFixed(2)}</td>
+            <td>£${formatPrice(previousPrice)}</td>
+            <td>£${formatPrice(currentPrice)}</td>
             <td>${p.stock || 0}</td>
             <td><span class="status-badge ${p.stock > 0 ? 'badge-success' : 'badge-danger'}">${p.stock > 0 ? 'In Stock' : 'Out of Stock'}</span></td>
             <td>
@@ -529,9 +545,9 @@ function updateLivePreview() {
     }
     let priceHtml = '';
     if (currentPrice > 0 && currentPrice < price) {
-        priceHtml = `<div style="margin-top:8px;"><span style="color:#dc2626;text-decoration:line-through;font-weight:700;">£${price.toFixed(2)}</span> <span style="color:#2563eb;font-weight:800;">£${currentPrice.toFixed(2)}</span> <span style="color:#059669;font-size:0.85rem;margin-left:5px;">(${discount}% off)</span></div>`;
+        priceHtml = `<div style="margin-top:8px;"><span style="color:#dc2626;text-decoration:line-through;font-weight:700;">£${formatPrice(price)}</span> <span style="color:#2563eb;font-weight:800;">£${formatPrice(currentPrice)}</span> <span style="color:#059669;font-size:0.85rem;margin-left:5px;">(${discount}% off)</span></div>`;
     } else {
-        priceHtml = `<div style="margin-top:8px;"><span style="color:#2563eb;font-weight:800;">£${(currentPrice || price).toFixed(2)}</span></div>`;
+        priceHtml = `<div style="margin-top:8px;"><span style="color:#2563eb;font-weight:800;">£${formatPrice(currentPrice || price)}</span></div>`;
     }
     container.innerHTML = `
         <div style="padding:12px;">
@@ -734,16 +750,18 @@ if (productForm) {
             imageUrls.push('https://via.placeholder.com/300x310');
         }
 
-        const originalPrice = parseFloat(document.getElementById('p-price').value);
-        const currentPrice = parseFloat(document.getElementById('p-current-price').value) || originalPrice;
-        const discount = originalPrice > 0 ? Math.max(0, Math.min(100, Math.round((1 - currentPrice / originalPrice) * 100))) : 0;
+        const previousPrice = parseFloat(document.getElementById('p-price').value) || 0;
+        const currentPrice = parseFloat(document.getElementById('p-current-price').value) || previousPrice;
+
+        // Discount is now purely informational or calculated for legacy reasons
+        const discount = previousPrice > 0 ? Math.max(0, Math.min(100, Math.round((1 - currentPrice / previousPrice) * 100))) : 0;
 
         const selectedCategories = Array.from(document.querySelectorAll('input[name="p-category"]:checked')).map(cb => cb.value);
 
         const productData = {
             name: document.getElementById('p-name').value,
-            price: currentPrice,
-            previousPrice: originalPrice,
+            price: currentPrice, // price field kept for backward compatibility (set to current)
+            previousPrice: previousPrice,
             currentPrice: currentPrice,
             discount: discount,
             category: selectedCategories,
@@ -769,6 +787,12 @@ if (productForm) {
                 if (window.showToast) window.showToast('Product Saved Successfully!', 'success');
                 closeModal('product-modal');
                 renderAdminProducts();
+
+                // ✅ Broadcast change to other tabs (Store UI)
+                const syncChannel = new BroadcastChannel('rhyl-sync');
+                syncChannel.postMessage({ type: 'product-updated' });
+                syncChannel.close();
+
                 // Refresh dashboard stats as they might have changed
                 const stats = await fetchDashboardStats();
                 if (stats) updateStats(stats);
@@ -820,10 +844,11 @@ window.editProduct = async function (id) {
             form.dataset.id = p._id;
 
             document.getElementById('p-name').value = p.name;
-            const prevPrice = p.previousPrice || p.price || 0;
-            const currPrice = p.currentPrice || (p.price * (1 - (p.discount || 0) / 100)) || 0;
-            document.getElementById('p-price').value = prevPrice.toFixed(2);
-            document.getElementById('p-current-price').value = currPrice.toFixed(2);
+            const prevPrice = p.previousPrice || 0;
+            const currPrice = p.currentPrice || p.price || 0;
+
+            document.getElementById('p-price').value = prevPrice > 0 ? formatPrice(prevPrice) : '';
+            document.getElementById('p-current-price').value = formatPrice(currPrice);
             document.getElementById('p-stock').value = p.stock || 0;
             document.getElementById('p-description').value = p.description || '';
             document.getElementById('p-image-url').value = '';
@@ -1055,7 +1080,7 @@ window.renderAdminOrders = async function (filter = 'All') {
             <td>#${o._id.substring(o._id.length - 6)}</td>
             <td>${new Date(o.createdAt).toLocaleDateString()}</td>
             <td>${o.customerName || (o.user ? o.user.name : 'Guest')}</td>
-            <td>£${o.totalAmount.toFixed(2)}</td>
+            <td>£${formatPrice(o.totalAmount)}</td>
             <td>
                 <select class="form-control status-select" onchange="updateOrderStatus('${o._id}', this.value)" style="padding: 4px 8px; font-size: 0.8rem; height: auto; width: auto; border-radius: 6px; border-color: var(--admin-border);">
                     <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Pending</option>
@@ -1138,11 +1163,11 @@ window.viewOrderDetails = async function (id) {
             const name = product && (product.name || product.title) ? (product.name || product.title) : 'Product';
             const qty = item.quantity || 0;
             const price = item.price != null ? item.price : 0;
-            const subtotal = (qty * price).toFixed(2);
-            return '<tr style="border-bottom: 1px solid var(--admin-border);"><td style="padding: 10px 12px;">' + name + '</td><td style="padding: 10px 12px; text-align: right;">' + qty + '</td><td style="padding: 10px 12px; text-align: right;">£' + price.toFixed(2) + '</td><td style="padding: 10px 12px; text-align: right;">£' + subtotal + '</td></tr>';
+            const subtotal = formatPrice(qty * price);
+            return '<tr style="border-bottom: 1px solid var(--admin-border);"><td style="padding: 10px 12px;">' + name + '</td><td style="padding: 10px 12px; text-align: right;">' + qty + '</td><td style="padding: 10px 12px; text-align: right;">£' + formatPrice(price) + '</td><td style="padding: 10px 12px; text-align: right;">£' + subtotal + '</td></tr>';
         }).join('');
 
-        document.getElementById('order-details-total').textContent = '£' + (o.totalAmount != null ? o.totalAmount.toFixed(2) : '0.00');
+        document.getElementById('order-details-total').textContent = '£' + (o.totalAmount != null ? formatPrice(o.totalAmount) : '0');
         loading.style.display = 'none';
         content.style.display = 'block';
     } catch (e) {
@@ -1213,10 +1238,32 @@ window.renderAdminCustomers = async function () {
             <td>-</td> 
             <td><span class="status-badge ${c.role === 'admin' ? 'badge-success' : 'badge-info'}">${c.role}</span></td>
             <td>
-                <button class="btn btn-outline btn-sm" onclick="window.showToast && window.showToast('View details not implemented', 'info')"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-outline btn-sm" onclick="viewCustomer('${c._id}')"><i class="fas fa-eye"></i></button>
             </td>
         </tr>
     `).join('');
+};
+
+window.viewCustomer = async function (id) {
+    try {
+        const response = await fetch(`${API_URL}/admin/users`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        if (data.success) {
+            const customer = data.data.find(c => c._id === id);
+            if (customer) {
+                document.getElementById('cust-detail-name').innerText = customer.name;
+                document.getElementById('cust-detail-email').innerText = customer.email;
+                document.getElementById('cust-detail-role').innerText = customer.role;
+                document.getElementById('cust-detail-id').innerText = customer._id;
+                document.getElementById('cust-detail-avatar').src = `https://i.pravatar.cc/150?u=${customer.email}`;
+
+                document.getElementById('customer-details-modal').style.display = 'flex';
+            }
+        }
+    } catch (e) {
+        console.error('Error viewing customer:', e);
+        if (window.showToast) window.showToast('Error loading customer details', 'error');
+    }
 };
 
 // --- DISCOUNT/COUPON MANAGEMENT ---

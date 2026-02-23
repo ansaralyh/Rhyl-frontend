@@ -111,7 +111,7 @@
                                 </div>
                                 <div class="text-right shrink-0">
                                     <p class="font-black text-blue-600"
-                                        x-text="'£' + (item.price * item.quantity).toFixed(2)"></p>
+                                        x-text="'£' + formatPrice(item.price * item.quantity)"></p>
                                 </div>
                             </div>
                         </template>
@@ -119,7 +119,7 @@
                     <div class="p-6 border-t border-slate-100 space-y-2">
                         <div class="flex justify-between text-slate-600">
                             <span>Subtotal</span>
-                            <span class="font-bold" x-text="'£' + cartSubtotal().toFixed(2)"></span>
+                            <span class="font-bold" x-text="'£' + formatPrice(cartSubtotal())"></span>
                         </div>
                         <div class="flex justify-between text-slate-600">
                             <span>Delivery</span>
@@ -128,7 +128,7 @@
                         <div
                             class="flex justify-between text-xl font-black text-slate-900 pt-2 border-t border-slate-100">
                             <span>Total</span>
-                            <span x-text="'£' + cartSubtotal().toFixed(2)"></span>
+                            <span x-text="'£' + formatPrice(cartSubtotal())"></span>
                         </div>
                     </div>
                     <div class="p-6 pt-0">
@@ -222,6 +222,12 @@
 
 
                     setTimeout(() => { if (window.lucide) lucide.createIcons(); }, 100);
+                },
+
+                formatPrice(price) {
+                    if (price === undefined || price === null) return '0';
+                    const num = Number(price);
+                    return parseFloat(num.toFixed(2)).toString();
                 },
 
                 cartSubtotal() {

@@ -47,6 +47,7 @@
             font-family: 'Inter', sans-serif;
             transition: background 0.3s, color 0.3s;
             margin: 0;
+            overflow-x: hidden;
         }
 
         .admin-layout {
@@ -70,7 +71,7 @@
         }
 
         .sidebar-header {
-            padding: 30px 24px;
+            padding: 15px 24px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -85,13 +86,9 @@
         }
 
         .sidebar-logo .logo-img {
-            height: 50px;
+            height: 60px;
             width: auto;
-            background: transparent !important;
-            border: none;
-            padding: 0;
-            box-shadow: none;
-            mix-blend-mode: screen;
+            object-fit: contain;
         }
 
         .sidebar-logo {
@@ -115,17 +112,17 @@
         .sidebar-nav {
             padding: 0 16px;
             flex-grow: 1;
-            overflow-y: auto;
+            overflow: hidden;
         }
 
         .menu-item {
             display: flex;
             align-items: center;
-            padding: 12px 16px;
+            padding: 10px 16px;
             color: #94a3b8;
             text-decoration: none;
             border-radius: 12px;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             transition: all 0.2s ease;
             cursor: pointer;
             font-weight: 500;
@@ -159,7 +156,7 @@
         }
 
         .logout-item {
-            margin-top: 40px;
+            margin-top: 20px;
             color: #ef4444;
         }
 
@@ -174,6 +171,7 @@
             flex-grow: 1;
             padding: 40px;
             max-width: calc(100% - var(--sidebar-width));
+            overflow-x: hidden;
         }
 
         .admin-header {
@@ -996,7 +994,7 @@
 <body>
 
     <!-- Login Screen -->
-    <div id="login-overlay" style="display:none;">
+    <!-- <div id="login-overlay" style="display:none;">
         <div class="login-card" style="width: 500px;margin: auto;">
             <h2
                 style="text-align:center;margin: auto; margin-bottom:20px; color:var(--text-dark);width: 500px;margin-top: 5rem;">
@@ -1014,7 +1012,7 @@
                     style="width:20%; margin: auto;text-align: center;display: block;margin-top: 1rem;">Login</button>
             </form>
         </div>
-    </div>
+    </div> -->
 
     <!-- Main Admin Layout (Hidden initially) -->
     <div class="admin-layout" id="admin-panel" style="display:none;">
@@ -1026,7 +1024,8 @@
                 <i class="fas fa-bars"></i>
             </button>
             <div class="sidebar-logo">
-                <img src="images/rhyll-logo.png" alt="Rhyl" style="height: 36px; width: auto; object-fit: contain;">
+                <img src="images/rhyl-admin-logo-exact.png" alt="Rhyl"
+                    style="height: 36px; width: auto; object-fit: contain;">
             </div>
             <div class="admin-profile" style="padding: 4px; box-shadow: none;">
                 <img src="https://i.pravatar.cc/150?u=admin" alt="Admin" style="width: 32px; height: 32px;">
@@ -1037,8 +1036,7 @@
             <div class="sidebar-header" style="justify-content: center;">
                 <a href="store.html" class="sidebar-logo"
                     style="justify-content: center; text-decoration: none; background: transparent;">
-                    <img src="images/rhyll-logo.png" alt="Rhyl" class="logo-img"
-                        style="height: 64px; width: auto; background: transparent; object-fit: contain; mix-blend-mode: screen;">
+                    <img src="images/rhyl-admin-logo-exact.png" alt="Rhyl" class="logo-img">
                 </a>
             </div>
 
@@ -1130,12 +1128,15 @@
                             <h3 id="stat-products">0</h3>
                         </div>
                     </div>
-                    <div class="stats-card" onclick="switchTab('customers')" style="cursor: pointer;">
+                    <div class="stats-card" style="position: relative;">
                         <div class="stats-icon bg-soft-danger"><i class="fas fa-users"></i></div>
                         <div class="stats-info">
                             <span class="stats-label">Customers</span>
                             <h3 id="stat-customers">0</h3>
                         </div>
+                        <button class="btn btn-outline btn-sm" onclick="switchTab('customers')"
+                            style="position: absolute; right: 20px; top: 24px; padding: 4px 10px; font-size: 0.75rem;">View
+                            All</button>
                     </div>
                 </div>
 
@@ -1668,6 +1669,48 @@
         </div>
     </div>
 
+    <!-- Customer Details Modal -->
+    <div id="customer-details-modal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 id="customer-details-title">Customer Details</h2>
+                <span class="close" onclick="closeModal('customer-details-modal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="customer-details-content">
+                    <div class="text-center" style="margin-bottom: 20px;">
+                        <img id="cust-detail-avatar" src="https://i.pravatar.cc/150?u=admin" alt="Avatar"
+                            style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--admin-primary);">
+                        <h3 id="cust-detail-name" style="margin-top: 10px;">-</h3>
+                        <p id="cust-detail-role" class="text-light"
+                            style="font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">-</p>
+                    </div>
+                    <div style="display: grid; gap: 15px; font-size: 0.95rem;">
+                        <div
+                            style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--admin-border); padding-bottom: 8px;">
+                            <span class="text-light">Email:</span>
+                            <strong id="cust-detail-email">-</strong>
+                        </div>
+                        <div
+                            style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--admin-border); padding-bottom: 8px;">
+                            <span class="text-light">User ID:</span>
+                            <code id="cust-detail-id" style="font-size: 0.8rem;">-</code>
+                        </div>
+                        <div
+                            style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--admin-border); padding-bottom: 8px;">
+                            <span class="text-light">Status:</span>
+                            <span id="cust-detail-status" class="status-badge badge-success">Active</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="margin-top: 25px;">
+                    <button type="button" class="btn btn-primary"
+                        onclick="closeModal('customer-details-modal')">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Order Details Popup (view order + product details) -->
     <div id="order-details-modal" class="modal">
         <div class="modal-content large-modal">
@@ -1730,6 +1773,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="js/toast.js"></script>
     <script src="js/api.js"></script>

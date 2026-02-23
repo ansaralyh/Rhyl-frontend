@@ -65,18 +65,18 @@
     function normalizeRow(row, headers) {
         var name = findValue(row, headers, ['Product Title', 'product title', 'name', 'title', 'ProductTitle']);
         if (!name && headers && headers.length > 0) name = getByIndex(row, headers, 0);
-        
+
         var category = findValue(row, headers, ['Category', 'Categories', 'category', 'categories']);
         if (!category && headers && headers.length > 1) category = getByIndex(row, headers, 1);
-        
+
         var description = findValue(row, headers, ['Product Description', 'product description', 'description', 'Description']);
-        
+
         var imageUrlsStr = findValue(row, headers, [
-            'Product Images', 'product images', 'Image URLs', 'image urls', 
+            'Product Images', 'product images', 'Image URLs', 'image urls',
             'Image URLs (multiple, separated by commas)', 'images', 'image', 'Images'
         ]);
         var imageUrls = imageUrlsStr ? imageUrlsStr.split(',').map(function (s) { return s.trim(); }).filter(Boolean) : [];
-        
+
         // Match Previous Price column first (avoid matching "Current Price" or generic "Price")
         var prevPriceStr = findValue(row, headers, [
             'Previous Price (£)', 'Previous Price', 'previous price',
@@ -99,10 +99,10 @@
         var prevPrice = parseFloat(String(prevPriceStr || 0).replace(/[£$,]/g, '')) || 0;
         var currPrice = parseFloat(String(currPriceStr || '').replace(/[£$,]/g, ''));
         if (isNaN(currPrice) || currPrice < 0) currPrice = prevPrice;
-        
+
         var stockStr = findValue(row, headers, ['Stock Quantity', 'Stock', 'stock quantity', 'quantity', 'Quantity', 'Qty', 'qty']);
         var stock = Math.max(0, parseInt(stockStr, 10) || 0);
-        
+
         var featuredStr = findValue(row, headers, ['Featured Product', 'Featured', 'featured', 'Featured Product (Yes/No)']).toLowerCase();
         var featured = featuredStr === 'yes' || featuredStr === 'true' || featuredStr === '1';
 
@@ -118,6 +118,12 @@
         };
     }
 
+    function formatPrice(price) {
+        if (price === undefined || price === null) return '0';
+        var num = Number(price);
+        return parseFloat(num.toFixed(2)).toString();
+    }
+
     function renderPreview(rows) {
         var tbody = document.getElementById('bulk-preview-tbody');
         var countEl = document.getElementById('bulk-preview-count');
@@ -125,8 +131,8 @@
         countEl.textContent = rows.length;
         tbody.innerHTML = rows.map(function (r, i) {
             var imgs = r.imageUrls && r.imageUrls.length ? r.imageUrls.length : 0;
-            var prevPrice = r.previousPrice != null ? r.previousPrice.toFixed(2) : '0.00';
-            var currPrice = r.currentPrice != null ? r.currentPrice.toFixed(2) : '0.00';
+            var prevPrice = formatPrice(r.previousPrice);
+            var currPrice = formatPrice(r.currentPrice);
             return '<tr style="border-bottom: 1px solid var(--admin-border);">' +
                 '<td style="padding: 8px 10px;">' + (i + 1) + '</td>' +
                 '<td style="padding: 8px 10px;">' + (r.name || '—') + '</td>' +
