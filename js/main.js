@@ -100,6 +100,7 @@ document.addEventListener('alpine:init', () => {
         topProducts: [],
         cart: [],
         wishlist: [],
+        productsLoaded: false,
 
         devPopupOpen: false,
         countdown: { hours: 10, minutes: 0 },
@@ -243,6 +244,8 @@ document.addEventListener('alpine:init', () => {
                     // Slider & Top Products Logic
                     this.sliderProducts = allProducts.filter(p => p.featured || p.rating >= 4.5).slice(0, 5);
                     this.topProducts = [...allProducts].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 8);
+
+                    this.productsLoaded = true;
                 }
             } catch (error) {
                 console.error('Error fetching products:', error);
@@ -393,6 +396,85 @@ document.addEventListener('alpine:init', () => {
             el.textContent = message;
             document.body.appendChild(el);
             setTimeout(() => el.remove(), 3000);
+        }
+    }));
+
+    Alpine.data('categoryPage', () => ({
+        categoryTitle: 'Products',
+        allCategoryProducts: [],
+        categoryProducts: [],
+        currentPage: 1,
+        itemsPerPage: 20,
+        totalPages: 1,
+        loading: true,
+
+        init() {
+            const params = new URLSearchParams(window.location.search);
+            const categorySlug = params.get('category');
+
+            if (!categorySlug) {
+                this.loading = false;
+                return;
+            }
+
+            const categoryMap = {
+                'produce-products': { title: 'Fresh Produce', key: 'freshProduce' },
+                'grocery-staples': { title: 'Grocery & Staples', key: 'groceryStaples' },
+                'spices-masala': { title: 'Spices & Masala', key: 'spicesMasala' },
+                'dairy-products': { title: 'Dairy Products', key: 'dairyProducts' },
+                'meat-frozen': { title: 'Meat & Frozen', key: 'meatFrozen' },
+                'packaged-canned': { title: 'Packaged & Canned', key: 'packagedCanned' },
+                'snacks-bakery': { title: 'Snacks & Bakery', key: 'snacksBakery' },
+                'beverages': { title: 'Beverages', key: 'beverages' },
+                'household-cleaning': { title: 'Household & Cleaning', key: 'householdCleaning' },
+                'personal-care': { title: 'Personal Care', key: 'personalCare' },
+                'asian-products': { title: 'Asian Products', key: 'asianProducts' },
+                'african-products': { title: 'African Products', key: 'africanProducts' },
+                'baby-products': { title: 'Baby Products', key: 'babyProducts' },
+                'catering-products': { title: 'Catering Products', key: 'cateringProducts' },
+                'thai-philippines-products': { title: 'Thai & Philippines Products', key: 'thaiPhilippinesProducts' }
+            };
+
+            const mapping = categoryMap[categorySlug];
+            if (mapping) {
+                this.categoryTitle = mapping.title;
+
+                // Watch the parent's productsLoaded state
+                if (this.productsLoaded) {
+                    this.loadCategoryProducts(mapping.key);
+                } else {
+                    this.$watch('productsLoaded', (value) => {
+                        if (value) {
+                            this.loadCategoryProducts(mapping.key);
+                        }
+                    });
+                }
+            } else {
+                this.loading = false;
+            }
+        },
+
+        loadCategoryProducts(key) {
+            // Using Alpine's merging behavior to access the parent component array
+            this.allCategoryProducts = this[key] || [];
+            this.totalPages = Math.ceil(this.allCategoryProducts.length / this.itemsPerPage) || 1;
+            this.loading = false;
+            this.updatePage();
+        },
+
+        updatePage() {
+            const start = (this.currentPage - 1) * this.itemsPerPage;
+            const end = start + this.itemsPerPage;
+            this.categoryProducts = this.allCategoryProducts.slice(start, end);
+        },
+
+        changePage(offset) {
+            const newPage = this.currentPage + offset;
+            if (newPage >= 1 && newPage <= this.totalPages) {
+                this.currentPage = newPage;
+                this.updatePage();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
     }));
 

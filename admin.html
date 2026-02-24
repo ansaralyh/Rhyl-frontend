@@ -1228,6 +1228,22 @@
                             <!-- JS Injected -->
                         </tbody>
                     </table>
+                    <!-- Pagination Controls -->
+                    <div id="admin-pagination"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding: 10px 0;">
+                        <div class="text-light" style="font-size: 0.9rem;">
+                            Showing <span id="page-start">0</span> to <span id="page-end">0</span> of <span
+                                id="total-products">0</span> products
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button id="prev-page-btn" class="btn btn-outline btn-sm" onclick="changeAdminPage(-1)"
+                                disabled><i class="fas fa-chevron-left"></i> Previous</button>
+                            <span id="page-info" style="font-size: 0.9rem; font-weight: 600;">Page <span
+                                    id="current-page">1</span> of <span id="total-pages">1</span></span>
+                            <button id="next-page-btn" class="btn btn-outline btn-sm" onclick="changeAdminPage(1)">Next
+                                <i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
                 </div>
             </div>
 

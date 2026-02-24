@@ -871,7 +871,7 @@
                         <div :class="`h-1 w-12 bg-${section.color}-500 rounded-full`"></div>
                         <h2 class="text-3xl md:text-4xl font-black text-slate-900" x-text="section.title"></h2>
                     </div>
-                    <a href="#"
+                    <a :href="'products.html?category=' + section.id"
                         class="group flex items-center gap-2 font-bold text-slate-400 hover:text-blue-600 transition-colors">
                         Explore All <i data-lucide="arrow-right"
                             class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
@@ -880,7 +880,7 @@
 
                 <div
                     :class="(section.id === 'asian-products' || section.id === 'african-products' || section.id === 'catering-products') ? 'flex flex-wrap gap-6 justify-start pb-8' : 'flex gap-8 overflow-x-auto no-scrollbar snap-x pb-8 px-2 -mx-2'">
-                    <template x-for="product in $data[section.data]" :key="product._id">
+                    <template x-for="product in $data[section.data].slice(0, 12)" :key="product._id">
                         <a :href="'product-detail.html?id=' + product._id"
                             :class="(section.id === 'asian-products' || section.id === 'african-products' || section.id === 'catering-products') ? 'product-card w-[calc(25%-18px)] min-w-[220px] bg-white rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-shadow block' : 'product-card min-w-[280px] sm:min-w-[300px] bg-white rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col snap-start cursor-pointer hover:shadow-lg transition-shadow block'">
                             <div

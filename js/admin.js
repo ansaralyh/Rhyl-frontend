@@ -292,10 +292,11 @@ function renderLowStock(lowStockProducts) {
 let productSearchQuery = '';
 let productCategoryFilter = 'All';
 let searchTimeout = null;
+let currentProductPage = 1;
 
 async function fetchProducts() {
     try {
-        let url = `${API_URL}/products?limit=100`;
+        let url = `${API_URL}/products?limit=20&page=${currentProductPage}`;
         if (productSearchQuery) {
             url += `&search=${encodeURIComponent(productSearchQuery)}`;
         }
@@ -305,15 +306,16 @@ async function fetchProducts() {
 
         const response = await fetch(url, { headers: getAuthHeaders() });
         const data = await response.json();
-        return data.success ? data.data : [];
+        return data;
     } catch (e) {
         console.error(e);
-        return [];
+        return { success: false, data: [] };
     }
 }
 
 window.filterAdminProducts = function (val) {
     productSearchQuery = val;
+    currentProductPage = 1;
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
         renderAdminProducts();
@@ -322,6 +324,13 @@ window.filterAdminProducts = function (val) {
 
 window.filterAdminCategory = function (val) {
     productCategoryFilter = val;
+    currentProductPage = 1;
+    renderAdminProducts();
+}
+
+window.changeAdminPage = function (delta) {
+    currentProductPage += delta;
+    if (currentProductPage < 1) currentProductPage = 1;
     renderAdminProducts();
 }
 
@@ -351,7 +360,28 @@ window.renderAdminProducts = async function () {
     // Ensure filters are populated
     fetchCategoriesForFilter();
 
-    const products = await fetchProducts();
+    const responseData = await fetchProducts();
+    const products = responseData.success ? (responseData.products || responseData.data) : [];
+
+    // Update Pagination UI
+    const totalPages = responseData.totalPages || responseData.pages || 1;
+    const totalProducts = responseData.totalProducts || responseData.total || 0;
+    const currentPage = responseData.currentPage || responseData.page || 1;
+
+    const pageEl = document.getElementById('current-page');
+    if (pageEl) {
+        pageEl.textContent = currentPage;
+        document.getElementById('total-pages').textContent = totalPages;
+        document.getElementById('total-products').textContent = totalProducts;
+
+        const startIdx = totalProducts === 0 ? 0 : ((currentPage - 1) * 20) + 1;
+        const endIdx = Math.min(currentPage * 20, totalProducts);
+        document.getElementById('page-start').textContent = startIdx;
+        document.getElementById('page-end').textContent = endIdx;
+
+        document.getElementById('prev-page-btn').disabled = currentPage <= 1;
+        document.getElementById('next-page-btn').disabled = currentPage >= totalPages;
+    }
 
     if (products.length === 0) {
         list.innerHTML = '<tr><td colspan="8" class="text-center">No products found</td></tr>';
