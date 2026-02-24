@@ -539,18 +539,28 @@ function updateLivePreview() {
     const currentPrice = parseFloat(currentPriceVal) || 0;
     const discount = price > 0 ? Math.max(0, Math.min(100, Math.round((1 - currentPrice / price) * 100))) : 0;
 
-    if (!name && price === 0) {
+    if (!name && price === 0 && (typeof productImages === 'undefined' || productImages.length === 0)) {
         container.innerHTML = '<div class="preview-placeholder">Enter product details to see preview</div>';
         return;
     }
+
     let priceHtml = '';
     if (currentPrice > 0 && currentPrice < price) {
         priceHtml = `<div style="margin-top:8px;"><span style="color:#dc2626;text-decoration:line-through;font-weight:700;">£${formatPrice(price)}</span> <span style="color:#2563eb;font-weight:800;">£${formatPrice(currentPrice)}</span> <span style="color:#059669;font-size:0.85rem;margin-left:5px;">(${discount}% off)</span></div>`;
     } else {
         priceHtml = `<div style="margin-top:8px;"><span style="color:#2563eb;font-weight:800;">£${formatPrice(currentPrice || price)}</span></div>`;
     }
+
+    let imgHtml = '';
+    if (typeof productImages !== 'undefined' && productImages.length > 0) {
+        imgHtml = `<img src="${productImages[0].src}" style="width:100%; height:200px; object-fit:contain; border-radius:12px; margin-bottom:12px;">`;
+    } else {
+        imgHtml = `<div style="width:100%; height:200px; display:flex; align-items:center; justify-content:center; background:var(--admin-bg); border-radius:12px; margin-bottom:12px; color:var(--admin-text-light);"><i class="fas fa-image" style="font-size:3rem; opacity:0.3;"></i></div>`;
+    }
+
     container.innerHTML = `
-        <div style="padding:12px;">
+        <div style="padding:12px; width: 100%; text-align: center; border: 1px solid var(--admin-border); border-radius: 16px; background: var(--admin-card-bg);">
+            ${imgHtml}
             <div style="font-weight:700;font-size:1rem;">${name || 'Product title'}</div>
             ${priceHtml}
         </div>
@@ -633,6 +643,7 @@ if (productForm) {
         container.appendChild(previewDiv);
         container.style.display = 'grid';
 
+        updateLivePreview();
         return imageId;
     };
 
@@ -664,6 +675,7 @@ if (productForm) {
             // Update main label if needed
             updateMainImageLabel();
         }
+        updateLivePreview();
     };
 
     // Function to update main image label
@@ -852,7 +864,6 @@ window.editProduct = async function (id) {
             document.getElementById('p-stock').value = p.stock || 0;
             document.getElementById('p-description').value = p.description || '';
             document.getElementById('p-image-url').value = '';
-            updateLivePreview();
 
             // Load multiple images if available
             productImages = [];
@@ -873,6 +884,8 @@ window.editProduct = async function (id) {
             // Reset search
             const searchInput = document.getElementById('category-search');
             if (searchInput) searchInput.value = '';
+
+            updateLivePreview();
 
             // Set Category (Multi-select)
             if (p.category) {
