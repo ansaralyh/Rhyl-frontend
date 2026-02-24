@@ -29,63 +29,7 @@
 
 <body class="bg-slate-50 text-slate-900 overflow-x-hidden" x-data="indexPage" x-on:click.away="dropdownOpen = false">
 
-    <!-- Website Under Development Popup -->
-    <template x-if="devPopupOpen">
-        <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-            <!-- Overlay -->
-            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="devPopupOpen = false"></div>
-
-            <!-- Modal Content -->
-            <div
-                class="relative bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-300">
-                <div class="p-8 text-center space-y-6">
-                    <!-- Icon Container -->
-                    <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto">
-                        <i data-lucide="construction" class="w-10 h-10 text-amber-600"></i>
-                    </div>
-
-                    <div class="space-y-2">
-                        <h2 class="text-2xl font-black text-slate-900">Website Under Development</h2>
-                        <p class="text-slate-500 font-medium">We're working hard to bring you the best experience. We'll
-                            be live soon!</p>
-                    </div>
-
-                    <!-- Countdown Timer -->
-                    <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100">
-                        <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3">Estimated Launch
-                            In</p>
-                        <div class="flex items-center justify-center gap-4">
-                            <div class="flex flex-col items-center">
-                                <span class="text-4xl font-black text-blue-600"
-                                    x-text="countdown.hours.toString().padStart(2, '0')"></span>
-                                <span class="text-[10px] font-bold text-slate-400 uppercase">Hours</span>
-                            </div>
-                            <span class="text-4xl font-black text-slate-300 mb-4">:</span>
-                            <div class="flex flex-col items-center">
-                                <span class="text-4xl font-black text-blue-600"
-                                    x-text="countdown.minutes.toString().padStart(2, '0')"></span>
-                                <span class="text-[10px] font-bold text-slate-400 uppercase">Minutes</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- CTA Button -->
-                    <button @click="devPopupOpen = false"
-                        class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl active:scale-[0.98]">
-                        Browse Anyway
-                    </button>
-
-                    <p class="text-xs text-slate-400">Thank you for your patience!</p>
-                </div>
-
-                <!-- Close Button -->
-                <button @click="devPopupOpen = false"
-                    class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-900 transition-colors">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-        </div>
-    </template>
+    
 
     <!-- Marquee Ticker Bar -->
     <div class="marquee">
