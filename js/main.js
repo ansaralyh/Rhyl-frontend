@@ -116,8 +116,8 @@ document.addEventListener('alpine:init', () => {
             this.isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
 
             // Development Popup Logic
-            this.initCountdown();
-            this.devPopupOpen = true;
+            
+            
 
             // Load cart/wishlist from local storage (client-side persist only for now)
             const savedCart = localStorage.getItem('cart');
