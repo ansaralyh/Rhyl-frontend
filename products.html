@@ -29,7 +29,7 @@
 
 <body class="bg-slate-50 text-slate-900 overflow-x-hidden" x-data="indexPage" x-on:click.away="dropdownOpen = false">
 
-    
+
 
     <!-- Marquee Ticker Bar -->
     <div class="marquee">
@@ -386,21 +386,27 @@
             <template x-for="product in categoryProducts" :key="product._id">
                 <a :href="'product-detail.html?id=' + product._id"
                     class="product-card bg-white rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-shadow">
-                    <div class="image-zoom-container relative h-56 sm:h-64 bg-slate-50 flex items-center justify-center p-6 sm:p-8">
-                        <img :src="product.image" :alt="product.name" class="max-w-full max-h-full object-contain drop-shadow-xl">
+                    <div
+                        class="image-zoom-container relative h-56 sm:h-64 bg-slate-50 flex items-center justify-center p-6 sm:p-8">
+                        <img :src="product.image" :alt="product.name"
+                            class="max-w-full max-h-full object-contain drop-shadow-xl">
                     </div>
                     <div class="p-6 sm:p-8 flex flex-col flex-1 space-y-3">
-                        <h3 class="font-bold text-slate-900 text-lg leading-snug line-clamp-2" x-text="product.name"></h3>
+                        <h3 class="font-bold text-slate-900 text-lg leading-snug line-clamp-2" x-text="product.name">
+                        </h3>
                         <div class="flex items-baseline gap-1 flex-wrap">
-                            <span x-show="(product.discount || 0) > 0" class="text-xl font-black text-red-600 line-through mr-1" x-text="'£' + formatPrice(product.price)"></span>
-                            <span class="text-3xl font-black text-blue-600" x-text="'£' + formatPrice(product.price * (1 - (product.discount || 0) / 100))"></span>
+                            <span x-show="(product.previousPrice || 0) > 0"
+                                class="text-xl font-black text-red-600 line-through mr-1"
+                                x-text="'£' + formatPrice(product.previousPrice)"></span>
+                            <span class="text-3xl font-black text-blue-600"
+                                x-text="'£' + formatPrice(product.price)"></span>
                             <span class="text-xs text-slate-400 font-medium">GBP</span>
                         </div>
                     </div>
                 </a>
             </template>
         </div>
-        
+
         <!-- Empty State -->
         <div x-show="categoryProducts.length === 0 && !loading" class="text-center py-20">
             <p class="text-slate-500 text-xl font-medium">No products found in this category.</p>
@@ -421,7 +427,7 @@
             </button>
         </div>
     </section>
-<!-- Premium Footer -->
+    <!-- Premium Footer -->
     <footer class="bg-slate-950 pt-32 pb-12 text-slate-400 overflow-hidden relative">
         <!-- Decoration -->
         <div

@@ -145,7 +145,7 @@
                 <!-- Price: always show total (full) price and current price -->
                 <div class="space-y-1">
                     <div x-show="(product.previousPrice || 0) > 0" class="flex items-baseline gap-2 flex-wrap">
-                        <span class="text-slate-500 font-bold text-sm uppercase tracking-wider">Total price</span>
+                        <span class="text-slate-500 font-bold text-sm uppercase tracking-wider">Previous Price</span>
                         <span class="text-2xl font-black text-red-600 line-through"
                             x-text="'£' + formatPrice(product.previousPrice)"></span>
                         <span class="text-slate-400 text-sm">GBP</span>
@@ -153,7 +153,7 @@
                     <div class="flex items-baseline gap-2 flex-wrap">
                         <span class="text-slate-500 font-bold text-sm uppercase tracking-wider">Current price</span>
                         <span class="text-5xl lg:text-6xl font-black text-blue-600"
-                            x-text="'£' + formatPrice(product.currentPrice || product.price || 0)"></span>
+                            x-text="'£' + formatPrice(product.price || 0)"></span>
                         <span class="text-slate-400 font-medium">GBP</span>
                     </div>
                 </div>
@@ -362,8 +362,7 @@
                 },
 
                 getCurrentPrice(product) {
-                    const discount = product.discount || 0;
-                    return product.price * (1 - discount / 100);
+                    return product.price || 0;
                 },
                 addToCart(product) {
                     const currentPrice = this.getCurrentPrice(product);
