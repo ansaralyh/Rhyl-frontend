@@ -28,7 +28,7 @@
 
 <body class="bg-slate-50 text-slate-900 overflow-x-hidden" x-data="indexPage" x-on:click.away="dropdownOpen = false">
 
-    
+
 
     <!-- Marquee Ticker Bar -->
     <div class="marquee">
@@ -836,11 +836,11 @@
                                 <h3 class="font-bold text-slate-900 text-lg leading-snug line-clamp-2"
                                     x-text="product.name"></h3>
                                 <div class="flex items-baseline gap-1 flex-wrap">
-                                    <span x-show="(product.discount || 0) > 0"
+                                    <span x-show="(product.previousPrice || 0) > 0"
                                         class="text-xl font-black text-red-600 line-through mr-1"
-                                        x-text="'£' + formatPrice(product.price)"></span>
+                                        x-text="'£' + formatPrice(product.previousPrice)"></span>
                                     <span class="text-3xl font-black text-blue-600"
-                                        x-text="'£' + formatPrice(product.price * (1 - (product.discount || 0) / 100))"></span>
+                                        x-text="'£' + formatPrice(product.price)"></span>
                                     <span class="text-xs text-slate-400 font-medium">GBP</span>
                                 </div>
                             </div>
@@ -1158,11 +1158,11 @@
                 </div>
                 <div class="mt-auto w-full flex items-center justify-between border-t border-slate-100 pt-6">
                     <div class="flex items-baseline gap-1 flex-wrap">
-                        <span x-show="(product.discount || 0) > 0"
+                        <span x-show="(product.previousPrice || 0) > 0"
                             class="text-lg font-black text-red-600 line-through mr-1"
-                            x-text="'£' + formatPrice(product.price)"></span>
+                            x-text="'£' + formatPrice(product.previousPrice)"></span>
                         <span class="text-2xl font-black text-blue-600"
-                            x-text="'£' + formatPrice(product.price * (1 - (product.discount || 0) / 100))"></span>
+                            x-text="'£' + formatPrice(product.price)"></span>
                     </div>
                     <button @click="addToCart(product)"
                         class="p-3 bg-slate-50 text-slate-900 rounded-xl hover:bg-blue-600 hover:text-white transition-colors">

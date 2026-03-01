@@ -116,8 +116,8 @@ document.addEventListener('alpine:init', () => {
             this.isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
 
             // Development Popup Logic
-            
-            
+
+
 
             // Load cart/wishlist from local storage (client-side persist only for now)
             const savedCart = localStorage.getItem('cart');
@@ -325,8 +325,7 @@ document.addEventListener('alpine:init', () => {
 
         // Cart & Wishlist Logic (use current price after discount)
         getCurrentPrice(product) {
-            const discount = product.discount || 0;
-            return product.price * (1 - discount / 100);
+            return product.price || 0;
         },
         addToCart(product) {
             const currentPrice = this.getCurrentPrice(product);
