@@ -406,6 +406,8 @@ document.addEventListener('alpine:init', () => {
         itemsPerPage: 20,
         totalPages: 1,
         loading: true,
+        sortBy: 'default',
+        searchQuery: '',
 
         init() {
             const params = new URLSearchParams(window.location.search);
@@ -462,9 +464,27 @@ document.addEventListener('alpine:init', () => {
         },
 
         updatePage() {
+            let filtered = [...this.allCategoryProducts];
+            
+            // Apply search filter if any
+            if (this.searchQuery) {
+                const query = this.searchQuery.toLowerCase();
+                filtered = filtered.filter(p => p.name.toLowerCase().includes(query));
+            }
+
+            // Apply sorting
+            if (this.sortBy === 'price-low') {
+                filtered.sort((a, b) => a.price - b.price);
+            } else if (this.sortBy === 'price-high') {
+                filtered.sort((a, b) => b.price - a.price);
+            } else if (this.sortBy === 'name') {
+                filtered.sort((a, b) => a.name.localeCompare(b.name));
+            }
+
+            this.totalPages = Math.ceil(filtered.length / this.itemsPerPage) || 1;
             const start = (this.currentPage - 1) * this.itemsPerPage;
             const end = start + this.itemsPerPage;
-            this.categoryProducts = this.allCategoryProducts.slice(start, end);
+            this.categoryProducts = filtered.slice(start, end);
         },
 
         changePage(offset) {
@@ -474,6 +494,18 @@ document.addEventListener('alpine:init', () => {
                 this.updatePage();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
+        },
+
+        setSort(val) {
+            this.sortBy = val;
+            this.currentPage = 1;
+            this.updatePage();
+        },
+
+        setSearch(val) {
+            this.searchQuery = val;
+            this.currentPage = 1;
+            this.updatePage();
         }
     }));
 

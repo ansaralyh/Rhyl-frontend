@@ -176,10 +176,10 @@
                                 class="absolute top-full left-0 w-48 bg-white shadow-xl rounded-xl py-2 hidden group-hover:block border border-slate-100 mt-1">
                                 <h4 class="px-4 py-2 text-[10px] font-black uppercase text-slate-400 tracking-widest">
                                     Products</h4>
-                                <a href="#produce-products"
+                                <a href="products.html?category=produce-products"
                                     class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 font-medium">All
                                     Grocery</a>
-                                <a href="#"
+                                <a href="products.html?category=produce-products"
                                     class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 font-medium">Fresh
                                     Produce</a>
                                 <a href="#"
@@ -374,10 +374,33 @@
 
     <!-- Product Listing Section -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20" x-data="categoryPage()">
-        <div class="flex items-end justify-between mb-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
             <div class="space-y-2">
                 <div class="h-1 w-12 bg-blue-500 rounded-full"></div>
                 <h2 class="text-3xl md:text-4xl font-black text-slate-900" x-text="categoryTitle"></h2>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-4">
+                <!-- Search within category -->
+                <div class="relative min-w-[240px]">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4"></i>
+                    <input type="text" 
+                        placeholder="Search in this category..." 
+                        @input.debounce.300ms="setSearch($event.target.value)"
+                        class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm">
+                </div>
+
+                <!-- Sort Dropdown -->
+                <div class="relative">
+                    <select @change="setSort($event.target.value)"
+                        class="pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-sm font-bold appearance-none cursor-pointer">
+                        <option value="default">Default Sorting</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="name">Product Name A-Z</option>
+                    </select>
+                    <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none"></i>
+                </div>
             </div>
         </div>
 
