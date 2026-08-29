@@ -23,6 +23,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
     <!-- Custom JS -->
+    <script src="js/mock-fresh-meat-data.js"></script>
     <script src="js/toast.js"></script>
     <script src="js/main.js"></script>
 </head>
@@ -210,6 +211,28 @@
                                     Food</a>
                                 <a href="#"
                                     class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 font-medium">Skincare</a>
+                            </div>
+                        </div>
+
+                        <!-- Fresh Meat Dropdown -->
+                        <div class="relative group">
+                            <button
+                                class="px-1.5 py-2 text-xs font-bold text-slate-900 uppercase tracking-wider hover:bg-black/5 rounded-lg transition-colors flex items-center gap-1 whitespace-nowrap">
+                                Fresh Meat <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                            </button>
+                            <div
+                                class="absolute top-full left-0 w-48 bg-white shadow-xl rounded-xl py-2 hidden group-hover:block border border-slate-100 mt-1">
+                                <h4 class="px-4 py-2 text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                                    Products</h4>
+                                <a href="#fresh-meat-products"
+                                    class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 font-medium">All
+                                    Fresh Meat</a>
+                                <a href="#fresh-meat-products"
+                                    class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 font-medium">Chicken</a>
+                                <a href="#fresh-meat-products"
+                                    class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 font-medium">Lamb</a>
+                                <a href="#fresh-meat-products"
+                                    class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 font-medium">Beef</a>
                             </div>
                         </div>
 
@@ -415,6 +438,7 @@
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             <template x-for="cat in [
                 { name: 'Fresh Produce', id: 'produce-products', icon: 'apple' },
+                { name: 'Fresh Meat', id: 'fresh-meat-products', icon: 'beef' },
                 { name: 'Grocery & Staples', id: 'grocery-staples', icon: 'wheat' },
                 { name: 'Spices & Masala', id: 'spices-masala', icon: 'flame' },
                 { name: 'Dairy Products', id: 'dairy-products', icon: 'milk' },
@@ -442,6 +466,7 @@
     <!-- Product Sections Generic Template -->
     <template x-for="section in [
     { title: 'Fresh Produce', data: 'freshProduce', color: 'emerald', id: 'produce-products' },
+    { title: 'Fresh Meat', data: 'freshMeat', color: 'red', id: 'fresh-meat-products' },
     { title: 'Asian Products', data: 'asianProducts', color: 'blue', id: 'asian-products' },
         { title: 'African Product', data: 'africanProducts', color: 'yellow', id: 'african-products' },
         { title: 'Thai & Philippines Products', data: 'thaiPhilippinesProducts', color: 'red', id: 'thai-philippines-products' },
@@ -702,10 +727,10 @@
                 </div>
 
                 <div
-                    :class="(section.id === 'asian-products' || section.id === 'african-products' || section.id === 'catering-products') ? 'flex flex-wrap gap-6 justify-start pb-8' : 'flex gap-8 overflow-x-auto no-scrollbar snap-x pb-8 px-2 -mx-2'">
+                    :class="(section.id === 'asian-products' || section.id === 'african-products' || section.id === 'catering-products' || section.id === 'fresh-meat-products') ? 'flex flex-wrap gap-6 justify-start pb-8' : 'flex gap-8 overflow-x-auto no-scrollbar snap-x pb-8 px-2 -mx-2'">
                     <template x-for="product in $data[section.data].slice(0, 12)" :key="product._id">
                         <a :href="'product-detail.html?id=' + product._id"
-                            :class="(section.id === 'asian-products' || section.id === 'african-products' || section.id === 'catering-products') ? 'product-card w-[calc(25%-18px)] min-w-[220px] bg-white rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-shadow block' : 'product-card min-w-[280px] sm:min-w-[300px] bg-white rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col snap-start cursor-pointer hover:shadow-lg transition-shadow block'">
+                            :class="(section.id === 'asian-products' || section.id === 'african-products' || section.id === 'catering-products' || section.id === 'fresh-meat-products') ? 'product-card w-[calc(25%-18px)] min-w-[220px] bg-white rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-shadow block' : 'product-card min-w-[280px] sm:min-w-[300px] bg-white rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col snap-start cursor-pointer hover:shadow-lg transition-shadow block'">
                             <div
                                 class="image-zoom-container relative h-56 sm:h-64 bg-slate-50 flex items-center justify-center p-6 sm:p-8">
                                 <img :src="product.image" :alt="product.name"
@@ -714,7 +739,15 @@
                             <div class="p-6 sm:p-8 flex flex-col flex-1 space-y-3">
                                 <h3 class="font-bold text-slate-900 text-lg leading-snug line-clamp-2"
                                     x-text="product.name"></h3>
-                                <div class="flex items-baseline gap-1 flex-wrap">
+                                <!-- Special Fresh Meat Price Display -->
+                                <div x-show="section.id === 'fresh-meat-products'" 
+                                     class="bg-red-50 border-2 border-red-600 rounded-xl p-3 text-center">
+                                    <div x-show="product.priceLabel" class="text-sm font-bold text-red-600 uppercase tracking-wider" x-text="product.priceLabel"></div>
+                                    <div class="text-3xl font-black text-red-600" x-text="'£' + formatPrice(product.price)"></div>
+                                    <div x-show="product.unit" class="text-xs font-bold text-red-500" x-text="product.unit"></div>
+                                </div>
+                                <!-- Standard Price Display -->
+                                <div x-show="section.id !== 'fresh-meat-products'" class="flex items-baseline gap-1 flex-wrap">
                                     <span x-show="(product.previousPrice || 0) > 0"
                                         class="text-xl font-black text-red-600 line-through mr-1"
                                         x-text="'£' + formatPrice(product.previousPrice)"></span>
@@ -722,6 +755,12 @@
                                         x-text="'£' + formatPrice(product.price)"></span>
                                     <span class="text-xs text-slate-400 font-medium">GBP</span>
                                 </div>
+                                <!-- Add to Cart Button -->
+                                <button @click.prevent="addToCart(product)" 
+                                    class="mt-auto w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
+                                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                                    <span>Add to Cart</span>
+                                </button>
                             </div>
                         </a>
                     </template>

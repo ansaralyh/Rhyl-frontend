@@ -81,6 +81,7 @@ document.addEventListener('alpine:init', () => {
 
         // New Categorized Product Arrays
         freshProduce: [],
+        freshMeat: [],
         groceryStaples: [],
         spicesMasala: [],
         dairyProducts: [],
@@ -216,10 +217,23 @@ document.addEventListener('alpine:init', () => {
                     this.cateringProducts = allProducts.filter(p => matchesAny(p, ['catering', 'bulk', 'wholesale', 'restaurant']));
                     this.thaiPhilippinesProducts = allProducts.filter(p => matchesAny(p, ['thai', 'philippines', 'filipino', 'vietnam', 'southeast']));
 
+                    // Load Fresh Meat mock data for demo
+                    if (typeof freshMeatMockData !== 'undefined') {
+                        this.freshMeat = freshMeatMockData.map(product => ({
+                            ...product,
+                            _id: product.id,
+                            price: product.price,
+                            previousPrice: 0,
+                            rating: 4.5,
+                            stock: 10
+                        }));
+                    }
+
                     // Debug logging
                     console.log('=== Product Category Debug ===');
                     console.log('Total products loaded:', allProducts.length);
                     console.log('Fresh Produce:', this.freshProduce.length);
+                    console.log('Fresh Meat:', this.freshMeat.length);
                     console.log('Catering Products:', this.cateringProducts.length);
                     console.log('Asian Products:', this.asianProducts.length);
                     console.log('African Products:', this.africanProducts.length);
