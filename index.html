@@ -769,10 +769,10 @@
                 </div>
 
                 <div
-                    :class="(section.id === 'asian-products' || section.id === 'african-products' || section.id === 'catering-products' || section.id === 'fresh-meat-products') ? 'flex flex-wrap gap-6 justify-start pb-8' : 'flex gap-8 overflow-x-auto no-scrollbar snap-x pb-8 px-2 -mx-2'">
+                    :class="(section.id === 'asian-products' || section.id === 'african-products' || section.id === 'catering-products') ? 'flex flex-wrap gap-6 justify-start pb-8' : 'flex gap-8 overflow-x-auto no-scrollbar snap-x pb-8 px-2 -mx-2'">
                     <template x-for="product in $data[section.data].slice(0, 12)" :key="product._id">
                         <a :href="'product-detail.html?id=' + product._id"
-                            :class="(section.id === 'asian-products' || section.id === 'african-products' || section.id === 'catering-products' || section.id === 'fresh-meat-products') ? 'product-card w-[calc(25%-18px)] min-w-[220px] bg-white rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-shadow block' : 'product-card min-w-[280px] sm:min-w-[300px] bg-white rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col snap-start cursor-pointer hover:shadow-lg transition-shadow block'">
+                            :class="(section.id === 'asian-products' || section.id === 'african-products' || section.id === 'catering-products') ? 'product-card w-[calc(25%-18px)] min-w-[220px] bg-white rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-shadow block' : 'product-card min-w-[280px] sm:min-w-[300px] bg-white rounded-[2rem] border border-slate-100 overflow-hidden flex flex-col snap-start cursor-pointer hover:shadow-lg transition-shadow block'">
                             <div
                                 class="image-zoom-container relative h-56 sm:h-64 bg-slate-50 flex items-center justify-center p-6 sm:p-8">
                                 <img :src="product.image" :alt="product.name"
